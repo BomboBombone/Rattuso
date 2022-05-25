@@ -1,7 +1,7 @@
 #include "injection.h"
 
-const char szDllFile[] = "C:\\Users\\bombo\\source\\repos\\ManualMappingTest\\ManualMappingTest\\Test.dll";
-const char szProc[] = "Test_Console.exe";
+const char szDllFile[] = "C:\\Users\\bombo\\source\\repos\\ManualMappingTest\\x64\\Release\\DllTest.dll";
+const char szProc[] = "TestConsole.exe";
 
 int main() {
 	PROCESSENTRY32 PE32{ 0 };
@@ -10,7 +10,7 @@ int main() {
 	HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 	if (hSnap == INVALID_HANDLE_VALUE) {
 		DWORD Err = GetLastError();
-		printf("CreateToolhelp32Snapshot failed 0x%X\n");
+		printf("CreateToolhelp32Snapshot failed 0x%X\n", GetLastError());
 		system("PAUSE");
 		return 0;
 	}
@@ -30,7 +30,7 @@ int main() {
 	HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, PID);
 	if (!hProc) {
 		DWORD Err = GetLastError();
-		printf("OpenProcess failed: 0x%X\n");
+		printf("OpenProcess failed: 0x%X\n", GetLastError());
 		system("PAUSE");
 		return 0;
 	}

@@ -9,6 +9,7 @@ bool ManualMap(HANDLE hProc, const char* szDllFile) {
 	IMAGE_FILE_HEADER* pOldFileHeader = nullptr;
 	BYTE* pTargetBase = nullptr;
 
+	//Attempt to check file attributes to see if file exists
 	DWORD dwCheck = 0;
 	if (GetFileAttributesA(szDllFile) == INVALID_FILE_ATTRIBUTES) {
 		printf("File doesn't exist\n");
@@ -24,7 +25,7 @@ bool ManualMap(HANDLE hProc, const char* szDllFile) {
 	//Tellg takes the current cursor position, therefore getting the file length
 	auto FileSize = File.tellg();
 	if (FileSize < 0x1000) {
-		printf("Filesize is invalid.\n");
+		printf("Filesize is invalid.\n"); //The first 0x1000 bytes are reserved for the PE header, therefore a file can't be less than 0x1000 bytes long
 		File.close();
 		return false;
 	}
@@ -37,9 +38,12 @@ bool ManualMap(HANDLE hProc, const char* szDllFile) {
 	}
 	//Seeks to the beginning after reading file length
 	File.seekg(0, std::ios::beg);
+	//Put file in memory to the memory pointed to by pSrcData
 	File.read(reinterpret_cast<char*>(pSrcData), FileSize);
+	//Close file stream
 	File.close();
 
+	//Check MZ header integrity
 	if (reinterpret_cast<IMAGE_DOS_HEADER*>(pSrcData)->e_magic != 0x5A4D) {
 		printf("Invalid file\n");
 		delete[] pSrcData;
@@ -63,7 +67,7 @@ bool ManualMap(HANDLE hProc, const char* szDllFile) {
 		return false;
 	}
 #endif
-	//Attempt to allocate memory for the image in the preferred location, otherwise in a random one
+	//Attempt to allocate memory for the image in the preferred location, otherwise in a random one (Will require relocation in the latter case)
 	pTargetBase = reinterpret_cast<BYTE*>(VirtualAllocEx(hProc, reinterpret_cast<void*>(pOldOptHeader->ImageBase), pOldOptHeader->SizeOfImage, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE));
 	if (!pTargetBase) {
 		pTargetBase = reinterpret_cast<BYTE*>(VirtualAllocEx(hProc, nullptr, pOldOptHeader->SizeOfImage, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE));
@@ -91,6 +95,7 @@ bool ManualMap(HANDLE hProc, const char* szDllFile) {
 			}
 		}
 	}
+
 	//Copy PE headers (they are 0x1000 bytes in size)
 	memcpy(pSrcData, &data, sizeof(data));
 	WriteProcessMemory(hProc, pTargetBase, pSrcData, 0x1000, nullptr);
@@ -110,7 +115,7 @@ bool ManualMap(HANDLE hProc, const char* szDllFile) {
 	if (!hThread) {
 		printf("Thread creation failed 0x%X\n", GetLastError());
 		VirtualFreeEx(hProc, pTargetBase, 0, MEM_RELEASE);
-		VirtualFreeEx(hProc, pTargetBase, 0, MEM_RELEASE);
+		VirtualFreeEx(hProc, pShellCode, 0, MEM_RELEASE);
 		return false;
 	}
 
