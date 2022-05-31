@@ -14,4 +14,8 @@ struct MANUAL_MAPPING_DATA {
 	HINSTANCE hMod;
 };
 
-bool ManualMap(HANDLE hProc, const char* szDllFile); //szDllFile is full path
+DWORD ManualMap(HANDLE hProc, const char* szDllFile); //szDllFile is full path
+DWORD ResolveFunctionPtr(DWORD pBase, const wchar_t* szMod); //Get function ptr using a module loaded in memory
+
+int StringLengthA(char* str);
+wchar_t* CharToWChar_T(char* str);

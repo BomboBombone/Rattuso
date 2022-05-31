@@ -1,9 +1,10 @@
 // dllmain.cpp : Definisce il punto di ingresso per l'applicazione DLL.
 #include "pch.h"
 #include <iostream>
+#include <Windows.h>
 
 void main() {
-    std::cout << "I am being called from the dll";
+    MessageBoxA(NULL, "I'm being called from a manual mapped DLL!", "Very cool message!", MB_OK);
 }
 
 BOOL APIENTRY DllMain( HMODULE hModule,

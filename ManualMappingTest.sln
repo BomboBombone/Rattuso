@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.1.32421.90
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ManualMappingTest", "ManualMappingTest\ManualMappingTest.vcxproj", "{C69E5A42-6368-4176-AA4F-A61E144EA170}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4B2ACF10-8DE2-459A-AB88-C99508A53E16} = {4B2ACF10-8DE2-459A-AB88-C99508A53E16}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestConsole", "TestConsole\TestConsole.vcxproj", "{A870D864-CC30-43CA-89B3-71128DB0D580}"
 EndProject

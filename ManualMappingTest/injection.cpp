@@ -2,7 +2,7 @@
 
 void __stdcall ShellCode(MANUAL_MAPPING_DATA* pData);
 
-bool ManualMap(HANDLE hProc, const char* szDllFile) {
+DWORD ManualMap(HANDLE hProc, const char* szDllFile) {
 	BYTE* pSrcData = nullptr;
 	IMAGE_NT_HEADERS* pOldNtHeader = nullptr;
 	IMAGE_OPTIONAL_HEADER* pOldOptHeader = nullptr;
@@ -42,6 +42,7 @@ bool ManualMap(HANDLE hProc, const char* szDllFile) {
 	File.read(reinterpret_cast<char*>(pSrcData), FileSize);
 	//Close file stream
 	File.close();
+	std::cout << "File put in 0x" << std::hex << (DWORD)pSrcData << std::endl;
 
 	//Check MZ header integrity
 	if (reinterpret_cast<IMAGE_DOS_HEADER*>(pSrcData)->e_magic != 0x5A4D) {
@@ -77,6 +78,7 @@ bool ManualMap(HANDLE hProc, const char* szDllFile) {
 			return false;
 		}
 	}
+	printf("Loaded module at 0x%X\n", pTargetBase);
 
 	MANUAL_MAPPING_DATA data{ 0 };
 	data.pLoadLibraryA = LoadLibraryA;
@@ -120,7 +122,6 @@ bool ManualMap(HANDLE hProc, const char* szDllFile) {
 	}
 
 	CloseHandle(hThread);
-
 	//Deallocate shellcode memory
 	HINSTANCE hCheck = NULL;
 	while (!hCheck) {
@@ -132,7 +133,45 @@ bool ManualMap(HANDLE hProc, const char* szDllFile) {
 
 	VirtualFreeEx(hProc, pShellCode, 0, MEM_RELEASE);
 
-	return true;
+	return (DWORD)pTargetBase;
+}
+
+//This function will get the VA of the function, but doesn't work for forwarded exports (function is imported from another module)
+DWORD ResolveFunctionPtr(DWORD pBase, const wchar_t* szMod) 
+{
+	//Load the export table
+	void* procAddr = nullptr;
+	auto* pOpt = &reinterpret_cast<IMAGE_NT_HEADERS*>(pBase + reinterpret_cast<IMAGE_DOS_HEADER*>((BYTE*)pBase)->e_lfanew)->OptionalHeader;
+	auto* pExportTable = reinterpret_cast<IMAGE_EXPORT_DIRECTORY*>(pBase + pOpt->DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress);
+	std::cout << "Loaded export table\n";
+	//Load the function name array (AddressOfNames member)
+
+	unsigned int* NameRVA = (unsigned int*)(pBase + pExportTable->AddressOfNames);
+
+	//Iterate over AddressOfNames
+	for (int i = 0; i < pExportTable->NumberOfNames; i++) {
+		//Calculate Absolute Address and cast
+		char* name = (char*)(pBase + NameRVA[i]);
+		wchar_t* wname = CharToWChar_T(name);
+		if (!_wcsicmp(wname, szMod)) {
+			free(wname);
+
+			//Lookup Ordinal
+			unsigned short NameOrdinal = ((unsigned short*)(pBase + pExportTable->AddressOfNameOrdinals))[i];
+
+			//Use Ordinal to Lookup Function Address and Calculate Absolute
+			unsigned int addr = ((unsigned int*)(pBase + pExportTable->AddressOfFunctions))[NameOrdinal];
+
+			procAddr = (void*)(pBase + addr);
+
+			break;
+		}
+		if (wname != nullptr) {
+			free(wname);
+		}
+	}
+
+	return (DWORD)procAddr;
 }
 
 #define RELOC_FLAG32(RelInfo)((RelInfo >> 0x0C) == IMAGE_REL_BASED_HIGHLOW)
@@ -214,8 +253,47 @@ void __stdcall ShellCode(MANUAL_MAPPING_DATA* pData)
 			(*pCallback)(pBase, DLL_PROCESS_ATTACH, nullptr);
 		}
 	}
+
 	//Call DllMain
-	_DllMain(pBase, DLL_PROCESS_ATTACH, nullptr);
+	if(pOpt->AddressOfEntryPoint)
+		_DllMain(pBase, DLL_PROCESS_ATTACH, nullptr);
 
 	pData->hMod = reinterpret_cast<HINSTANCE>(pBase);
+}
+
+/*
+* StringLengthA
+*
+* Use: Retrieve length of char string
+* Parameters: char string
+* Return: Length of string
+*/
+int StringLengthA(char* str) {
+	int length;
+
+	for (length = 0; str[length] != '\0'; length++) {}
+	return length;
+}
+
+/*
+* CharToWChar_T
+*
+* Use: Convert char string to wchar_t string - caller responsible for freeing memory
+* Parameters: char string
+* Return: wchar_t string
+*/
+wchar_t* CharToWChar_T(char* str) {
+	int length = StringLengthA(str);
+
+	if (str == nullptr) {
+		return nullptr;
+	}
+
+	wchar_t* wstr_t = (wchar_t*)malloc(sizeof(wchar_t) * length + 2);
+
+	for (int i = 0; i < length; i++) {
+		wstr_t[i] = str[i];
+	}
+	wstr_t[length] = '\0';
+	return wstr_t;
 }
