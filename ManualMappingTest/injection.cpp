@@ -2,7 +2,7 @@
 
 void __stdcall ShellCode(MANUAL_MAPPING_DATA* pData);
 
-DWORD ManualMap(HANDLE hProc, const char* szDllFile) {
+uintptr_t ManualMap(HANDLE hProc, const char* szDllFile) {
 	BYTE* pSrcData = nullptr;
 	IMAGE_NT_HEADERS* pOldNtHeader = nullptr;
 	IMAGE_OPTIONAL_HEADER* pOldOptHeader = nullptr;
@@ -133,12 +133,14 @@ DWORD ManualMap(HANDLE hProc, const char* szDllFile) {
 
 	VirtualFreeEx(hProc, pShellCode, 0, MEM_RELEASE);
 
-	return (DWORD)pTargetBase;
+	return (uintptr_t)pTargetBase;
 }
 
 //This function will get the VA of the function, but doesn't work for forwarded exports (function is imported from another module)
-DWORD ResolveFunctionPtr(DWORD pBase, const wchar_t* szMod) 
+uintptr_t ResolveFunctionPtr(uintptr_t pBase, const wchar_t* szMod)
 {
+	std::cout << pBase << std::endl;
+
 	//Load the export table
 	void* procAddr = nullptr;
 	auto* pOpt = &reinterpret_cast<IMAGE_NT_HEADERS*>(pBase + reinterpret_cast<IMAGE_DOS_HEADER*>((BYTE*)pBase)->e_lfanew)->OptionalHeader;
@@ -171,7 +173,7 @@ DWORD ResolveFunctionPtr(DWORD pBase, const wchar_t* szMod)
 		}
 	}
 
-	return (DWORD)procAddr;
+	return (uintptr_t)procAddr;
 }
 
 #define RELOC_FLAG32(RelInfo)((RelInfo >> 0x0C) == IMAGE_REL_BASED_HIGHLOW)

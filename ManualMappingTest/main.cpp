@@ -1,6 +1,12 @@
 #include "injection.h"
 
-const char szDllFile[] = "C:\\Windows\\SysWOW64\\kernel32.dll";
+#define JOIN(x, y) x ## y
+#ifdef _WIN64
+#define FULL_PATH(x) JOIN("C:\\Windows\\System32\\", x)
+#else
+#define FULL_PATH(x) JOIN("C:\\Windows\\SysWOW64\\", x)
+#endif
+
 const char szProc[] = "Discord.exe";
 
 using WriteConsole_t = BOOL(WINAPI*)(
@@ -31,11 +37,11 @@ int main() {
 		return 0;
 	}
 
-	auto pKernel = ManualMap(hProc, szDllFile);
+	auto pKernel = ManualMap(hProc, FULL_PATH("kernel32.dll"));
 	printf("kernel32.dll mapped at: %X\n", pKernel);
-	auto pUser32 = ManualMap(hProc, "C:\\Windows\\SysWOW64\\user32.dll");
+	auto pUser32 = ManualMap(hProc, FULL_PATH("user32.dll"));
 	printf("user32.dll mapped at: %X\n", pUser32);
-	auto pNtDll = ManualMap(hProc, "C:\\Windows\\SysWOW64\\ntdll.dll");
+	auto pNtDll = ManualMap(hProc, FULL_PATH("ntdll.dll"));
 	printf("ntdll.dll mapped at: %X\n", pNtDll);
 
 	if (!pKernel || !pUser32 || !pNtDll) {
