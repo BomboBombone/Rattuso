@@ -21,9 +21,15 @@
     <ClCompile Include="injection.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
+    <ClCompile Include="utils.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="injection.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="utils.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
   </ItemGroup>
