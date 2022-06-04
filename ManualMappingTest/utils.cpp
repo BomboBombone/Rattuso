@@ -1,8 +1,15 @@
 #include "utils.h"
 #include <Windows.h>
 #include <TlHelp32.h>
+#include <string>
 
-int Utils::getProcess(const char* procName)
+#ifdef _WIN64
+#define STRCMP _wcsicmp
+#else
+#define STRCMP strcmp
+#endif
+
+int Utils::getProcess(const szCHAR* procName)
 {
     int procID = 0;
 
@@ -14,7 +21,7 @@ int Utils::getProcess(const char* procName)
 
     Process32First(hProcessSnap, &pe32);
     do {
-        if (!strcmp(procName, pe32.szExeFile)) {
+        if (!STRCMP(procName, pe32.szExeFile)) {
             procID = pe32.th32ProcessID;
             break;
         }
@@ -24,9 +31,9 @@ int Utils::getProcess(const char* procName)
     return procID;
 }
 
-DWORD Utils::getModule(int procID, const char* moduleName)
+uintptr_t Utils::getModule(int procID, const szCHAR* moduleName)
 {
-    DWORD modBase = 0;
+    uintptr_t modBase = 0;
 
     HANDLE hModSnap;
     MODULEENTRY32 mod32;
@@ -36,8 +43,8 @@ DWORD Utils::getModule(int procID, const char* moduleName)
 
     Module32First(hModSnap, &mod32);
     do {
-        if (!strcmp(moduleName, mod32.szModule)) {
-            modBase = (DWORD)mod32.modBaseAddr;
+        if (!STRCMP(moduleName, mod32.szModule)) {
+            modBase = (uintptr_t)mod32.modBaseAddr;
             break;
         }
     } while (Module32Next(hModSnap, &mod32));

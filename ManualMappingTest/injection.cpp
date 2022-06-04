@@ -12,7 +12,9 @@ uintptr_t ManualMap(HANDLE hProc, const char* szDllFile) {
 	//Attempt to check file attributes to see if file exists
 	DWORD dwCheck = 0;
 	if (GetFileAttributesA(szDllFile) == INVALID_FILE_ATTRIBUTES) {
-		printf("File doesn't exist\n");
+		printf("File doesn't exist\nFile name: ");
+		printf(szDllFile);
+		printf("--------");
 		return false;
 	}
 	//Opens file setting the cursor to the end of the file (ate flag)
@@ -42,7 +44,7 @@ uintptr_t ManualMap(HANDLE hProc, const char* szDllFile) {
 	File.read(reinterpret_cast<char*>(pSrcData), FileSize);
 	//Close file stream
 	File.close();
-	std::cout << "File put in 0x" << std::hex << (DWORD)pSrcData << std::endl;
+	std::cout << "File put in 0x" << std::hex << (uintptr_t)pSrcData << std::endl;
 
 	//Check MZ header integrity
 	if (reinterpret_cast<IMAGE_DOS_HEADER*>(pSrcData)->e_magic != 0x5A4D) {
@@ -78,7 +80,7 @@ uintptr_t ManualMap(HANDLE hProc, const char* szDllFile) {
 			return false;
 		}
 	}
-	printf("Loaded module at 0x%X\n", pTargetBase);
+	printf("Loaded module at 0x%X\n", (unsigned int)pTargetBase);
 
 	MANUAL_MAPPING_DATA data{ 0 };
 	data.pLoadLibraryA = LoadLibraryA;
@@ -136,7 +138,7 @@ uintptr_t ManualMap(HANDLE hProc, const char* szDllFile) {
 	return (uintptr_t)pTargetBase;
 }
 
-//This function will get the VA of the function, but doesn't work for forwarded exports (function is imported from another module)
+//This function will get the VA of the function, but doesn't work for forwarded exports (means function is imported from another module)
 uintptr_t ResolveFunctionPtr(uintptr_t pBase, const wchar_t* szMod)
 {
 	std::cout << pBase << std::endl;

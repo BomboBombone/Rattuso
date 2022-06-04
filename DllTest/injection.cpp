@@ -13,7 +13,9 @@ uintptr_t ManualMap(HANDLE hProc, const char* szDllFile) {
 	//Attempt to check file attributes to see if file exists
 	DWORD dwCheck = 0;
 	if (GetFileAttributesA(szDllFile) == INVALID_FILE_ATTRIBUTES) {
-		printf("File doesn't exist\n");
+		printf("File doesn't exist\nFile name: ");
+		printf(szDllFile);
+		printf("--------");
 		return false;
 	}
 	//Opens file setting the cursor to the end of the file (ate flag)

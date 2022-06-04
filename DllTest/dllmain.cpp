@@ -4,6 +4,8 @@
 #include <Windows.h>
 #include "injection.h"
 
+#define STATUS_NOT_SUPPORTED             ((NTSTATUS)0xC00000BBL)
+
 #define JOIN(x, y) x ## y
 #ifdef _WIN64
 #define FULL_PATH(x) JOIN("C:\\Windows\\System32\\", x)

@@ -86,13 +86,13 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
+      <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -101,7 +101,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -109,20 +109,20 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
+      <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;WIN32;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;/NODEFAULTLIB</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
+      <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -131,7 +131,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -139,17 +139,124 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
+      <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="aic.c" />
+    <ClCompile Include="appinfo\x64\appinfo64.c" />
+    <ClCompile Include="appinfo\x86-32\appinfo32.c" />
+    <ClCompile Include="appinfo_s.c" />
+    <ClCompile Include="compress.c" />
+    <ClCompile Include="fusutil.c" />
     <ClCompile Include="injection.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="makecab.c" />
+    <ClCompile Include="methods\api0cradle.c" />
+    <ClCompile Include="methods\azagarampur.c" />
+    <ClCompile Include="methods\comsup.c" />
+    <ClCompile Include="methods\dwells.c" />
+    <ClCompile Include="methods\hakril.c" />
+    <ClCompile Include="methods\hybrids.c" />
+    <ClCompile Include="methods\methods.c" />
+    <ClCompile Include="methods\rinn.c" />
+    <ClCompile Include="methods\shellsup.c" />
+    <ClCompile Include="methods\tyranid.c" />
+    <ClCompile Include="methods\wusa.c" />
+    <ClCompile Include="pcasvc\w7\x64\pcasvc7_64.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="pcasvc\w7\x86-32\pcasvc7_32.c" />
+    <ClCompile Include="pcasvc_c.c" />
+    <ClCompile Include="pcasvc_s.c" />
+    <ClCompile Include="Shared\cmdline.c" />
+    <ClCompile Include="Shared\hde\hde64.c" />
+    <ClCompile Include="Shared\ldr.c" />
+    <ClCompile Include="Shared\strtoi.c" />
+    <ClCompile Include="Shared\strtoul.c" />
+    <ClCompile Include="Shared\u64tohex.c" />
+    <ClCompile Include="Shared\u64tostr.c" />
+    <ClCompile Include="Shared\ultohex.c" />
+    <ClCompile Include="Shared\ultostr.c" />
+    <ClCompile Include="Shared\util.c" />
+    <ClCompile Include="Shared\windefend.c" />
+    <ClCompile Include="Shared\_filename.c" />
+    <ClCompile Include="Shared\_strcat.c" />
+    <ClCompile Include="Shared\_strcmp.c" />
+    <ClCompile Include="Shared\_strcmpi.c" />
+    <ClCompile Include="Shared\_strcpy.c" />
+    <ClCompile Include="Shared\_strend.c" />
+    <ClCompile Include="Shared\_strlen.c" />
+    <ClCompile Include="Shared\_strncmp.c" />
+    <ClCompile Include="Shared\_strncmpi.c" />
+    <ClCompile Include="Shared\_strncpy.c" />
+    <ClCompile Include="Shared\_strstri.c" />
+    <ClCompile Include="stub.c" />
+    <ClCompile Include="sup.c" />
+    <ClCompile Include="tests\test.c" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="aic.h" />
+    <ClInclude Include="appinfo\x64\appinfo64.h" />
+    <ClInclude Include="appinfo\x86-32\appinfo32.h" />
+    <ClInclude Include="bin32res.h" />
+    <ClInclude Include="bin64res.h" />
+    <ClInclude Include="compress.h" />
+    <ClInclude Include="encresource.h" />
+    <ClInclude Include="fusutil.h" />
+    <ClInclude Include="global.h" />
     <ClInclude Include="injection.h" />
+    <ClInclude Include="makecab.h" />
+    <ClInclude Include="methods\api0cradle.h" />
+    <ClInclude Include="methods\azagarampur.h" />
+    <ClInclude Include="methods\comsup.h" />
+    <ClInclude Include="methods\dwells.h" />
+    <ClInclude Include="methods\elvint.h" />
+    <ClInclude Include="methods\hakril.h" />
+    <ClInclude Include="methods\hybrids.h" />
+    <ClInclude Include="methods\methods.h" />
+    <ClInclude Include="methods\rinn.h" />
+    <ClInclude Include="methods\shellsup.h" />
+    <ClInclude Include="methods\tyranid.h" />
+    <ClInclude Include="methods\wusa.h" />
+    <ClInclude Include="pcasvc\w7\x64\pcasvc7_64.h" />
+    <ClInclude Include="pcasvc\w7\x86-32\pcasvc7_32.h" />
+    <ClInclude Include="pcasvc_h.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="Shared\cmdline.h" />
+    <ClInclude Include="Shared\consts.h" />
+    <ClInclude Include="Shared\hde\hde64.h" />
+    <ClInclude Include="Shared\hde\pstdint.h" />
+    <ClInclude Include="Shared\hde\table64.h" />
+    <ClInclude Include="Shared\ldr.h" />
+    <ClInclude Include="Shared\libinc.h" />
+    <ClInclude Include="Shared\minirtl.h" />
+    <ClInclude Include="Shared\ntos\ntbuilds.h" />
+    <ClInclude Include="Shared\ntos\ntos.h" />
+    <ClInclude Include="Shared\ntos\ntsxs.h" />
+    <ClInclude Include="Shared\rtltypes.h" />
+    <ClInclude Include="Shared\shared.h" />
+    <ClInclude Include="Shared\util.h" />
+    <ClInclude Include="Shared\windefend.h" />
+    <ClInclude Include="Shared\_filename.h" />
+    <ClInclude Include="stub.h" />
+    <ClInclude Include="sup.h" />
+    <ClInclude Include="tests\test.h" />
+    <ClInclude Include="uas.h" />
     <ClInclude Include="utils.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="appinfo\appinfo.idl" />
+    <Midl Include="pcasvc\w7\pcasvc7.idl" />
+    <Midl Include="pcasvc\w8_10\pcasvc.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="pcasvc\w7\pcasvc7.acf" />
+    <None Include="pcasvc\w8_10\pcasvc.acf" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
