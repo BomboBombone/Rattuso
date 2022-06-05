@@ -50,6 +50,7 @@ void Server::HandleInput()
 	currentSessionID = -1;
 	while (true)
 	{
+		std::cout << "Audhumla console => ";
 		std::getline(std::cin, userinput);
 
 		if (currentSessionID == -1)			//handle command while not having selected a client
@@ -87,8 +88,6 @@ void Server::HandleInput()
 			else
 				General::outputMsg("Please connect to a session with 'connect'", 2);
 		}
-
-
 		else						//handle command when client is selected
 		{
 			if (userinput == "exitSession")
@@ -130,6 +129,7 @@ void Server::HandleInput()
 				SendString(currentSessionID, userinput, PacketType::Instruction);
 			}
 		}
+		std::cout << "--------------------------------\n";
 	}
 }
 

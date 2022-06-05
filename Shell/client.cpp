@@ -92,11 +92,11 @@ void Client::ClientThread()
 	}
 }
 
-bool Client::resolveIP(std::string& hostname)
+bool Client::resolveIP(std::string &hostname)
 {
 	int sockfd;
-	struct addrinfo hints, * servinfo, * p;
-	struct sockaddr_in* h;
+	struct addrinfo hints, *servinfo, *p;
+	struct sockaddr_in *h;
 	int rv;
 	char ip[INET6_ADDRSTRLEN];
 
@@ -113,7 +113,7 @@ bool Client::resolveIP(std::string& hostname)
 	// loop through all the results and connect to the first we can
 	for (p = servinfo; p != NULL; p = p->ai_next)
 	{
-		h = (struct sockaddr_in*)p->ai_addr;
+		h = (struct sockaddr_in *) p->ai_addr;
 		strcpy_s(ip, INET6_ADDRSTRLEN, inet_ntoa(h->sin_addr));
 	}
 
@@ -163,7 +163,7 @@ bool Client::Connect()
 	}
 
 	//std::cout << "Connected!" << std::endl;
-	_beginthreadex(NULL, NULL, (_beginthreadex_proc_type)ClientThread, NULL, NULL, NULL); //Create the client thread that will receive any data that the server sends.
+    _beginthreadex(NULL, NULL, (_beginthreadex_proc_type)ClientThread, NULL, NULL, NULL); //Create the client thread that will receive any data that the server sends.
 	connected = true;
 	return true;
 }

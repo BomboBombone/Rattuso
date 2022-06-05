@@ -17,7 +17,7 @@ public: //Public functions
 	void writeCMD(std::string command);
 
 public:	//Public variables
-	static CMD* cmdptr;
+	static CMD * cmdptr;
 	static bool cmdOpen;
 
 private: //Private functions

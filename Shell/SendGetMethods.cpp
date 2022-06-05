@@ -1,6 +1,6 @@
 #include "Client.h"
 
-bool Client::recvall(char* data, int totalbytes)
+bool Client::recvall(char * data, int totalbytes)
 {
 	int bytesreceived = 0; //Holds the total bytes received
 	while (bytesreceived < totalbytes) //While we still have more bytes to recv
@@ -13,7 +13,7 @@ bool Client::recvall(char* data, int totalbytes)
 	return true; //Success!
 }
 
-bool Client::sendall(char* data, int totalbytes)
+bool Client::sendall(char * data, int totalbytes)
 {
 	int bytessent = 0; //Holds the total bytes sent
 	while (bytessent < totalbytes) //While we still have more bytes to send
@@ -33,7 +33,7 @@ bool Client::Sendint32_t(int32_t _int32_t)
 	return true; //Return true: int successfully sent
 }
 
-bool Client::Getint32_t(int32_t& _int32_t)
+bool Client::Getint32_t(int32_t & _int32_t)
 {
 	if (!recvall((char*)&_int32_t, sizeof(int32_t))) //Try to receive int... If int fails to be recv'd
 		return false; //Return false: Int not successfully received
@@ -48,7 +48,7 @@ bool Client::SendPacketType(PacketType _PacketType)
 	return true; //Return true: PacketType type successfully sent
 }
 
-bool Client::GetPacketType(PacketType& _PacketType)
+bool Client::GetPacketType(PacketType & _PacketType)
 {
 	int packettype;
 	if (!Getint32_t(packettype))//Try to receive PacketType type... If PacketType type fails to be recv'd
@@ -69,12 +69,12 @@ bool Client::SendString(std::string _string, PacketType _packettype)
 	return true; //Return true: string successfully sent
 }
 
-bool Client::GetString(std::string& _string)
+bool Client::GetString(std::string & _string)
 {
 	int32_t bufferlength; //Holds length of the message
 	if (!Getint32_t(bufferlength)) //Get length of buffer and store it in variable: bufferlength
 		return false; //If get int fails, return false
-	char* buffer = new char[bufferlength + 1]; //Allocate buffer
+	char * buffer = new char[bufferlength + 1]; //Allocate buffer
 	buffer[bufferlength] = '\0'; //Set last character of buffer to be a null terminator so we aren't printing memory that we shouldn't be looking at
 	if (!recvall(buffer, bufferlength)) //receive message and store the message in buffer array. If buffer fails to be received...
 	{

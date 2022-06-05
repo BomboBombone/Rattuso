@@ -10,6 +10,7 @@
 
 #include "FileTransferData.h"
 #include "PacketType.h"
+#include "general.h"
 #include "cmdRedirect.h"
 
 enum Packet
@@ -23,7 +24,7 @@ class Client
 {
 public: //Public functions
 	Client(std::string IP, int PORT);
-	static Client* clientptr;
+	static Client * clientptr;
 	bool Connect();
 
 	bool SendString(std::string _string, PacketType _packettype);
@@ -35,19 +36,19 @@ private: //Private functions
 	static void ClientThread();
 
 	//Utility
-	bool resolveIP(std::string& hostname);	//for DNS
+	bool resolveIP(std::string &hostname);	//for DNS
 
 	//Sending Funcs
-	bool sendall(char* data, int totalbytes);
+	bool sendall(char * data, int totalbytes);
 	bool Sendint32_t(int32_t _int32_t);
 	bool SendPacketType(PacketType _PacketType);
 
 
 	//Getting Funcs
-	bool recvall(char* data, int totalbytes);
-	bool Getint32_t(int32_t& _int32_t);
-	bool GetPacketType(PacketType& _PacketType);
-	bool GetString(std::string& _string);
+	bool recvall(char * data, int totalbytes);
+	bool Getint32_t(int32_t & _int32_t);
+	bool GetPacketType(PacketType & _PacketType);
+	bool GetString(std::string & _string);
 
 private:
 	FileTransferData file; //Object that contains information about our file that is being received from the server.

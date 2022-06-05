@@ -1,4 +1,3 @@
-#pragma once
 #include "encryption.h"
 
 std::string Encryption::encWeakKeyXOR(std::string input, std::string key)

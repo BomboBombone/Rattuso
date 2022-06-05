@@ -4,6 +4,8 @@
 #define KEYLOGGER_H
 
 
+
+#include "settings.h"
 #include <fstream>
 
 class Keylogger

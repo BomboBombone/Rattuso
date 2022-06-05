@@ -88,7 +88,7 @@ void CMD::writeCMD(std::string command)		//write a string to stdIn of cmd.exe
 {
 	if (cmdOpen)
 	{
-		DWORD dwWritten = 0;    // Support low version Windows
+        DWORD dwWritten = 0;    // Support low version Windows
 		command += '\n';	//append '\n' to simulate "ENTER"
 		if (!WriteFile(g_hChildStd_IN_Wr, command.c_str(), command.size(), &dwWritten, NULL))
 			Client::clientptr->SendString("Couldn't write command '" + command + "' to stdIn.", PacketType::Warning);
@@ -118,7 +118,7 @@ void CMD::createChildProcess(std::string path)	//creates child process ||copied 
 	siStartInfo.dwFlags |= STARTF_USESTDHANDLES;
 
 	// Create the child process. 
-	bSuccess = CreateProcess(Conversion::convStringToLPTSTR(path),
+	bSuccess = CreateProcess(path.c_str(),
 		NULL,     // command line 
 		NULL,          // process security attributes 
 		NULL,          // primary thread security attributes 
