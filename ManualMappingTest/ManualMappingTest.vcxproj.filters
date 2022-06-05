@@ -311,6 +311,9 @@
     <ClInclude Include="compress.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
+    <ClInclude Include="resource1.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="pcasvc\w7\pcasvc7.idl">
@@ -326,5 +329,10 @@
   <ItemGroup>
     <None Include="pcasvc\w7\pcasvc7.acf" />
     <None Include="pcasvc\w8_10\pcasvc.acf" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="MainLoader.rc">
+      <Filter>File di risorse</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

