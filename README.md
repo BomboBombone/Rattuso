@@ -12,20 +12,20 @@ will be taken from the main executable own image (check out Objectify project on
 7. (Optional) Shell will download/unpack an information scraper and run it
 8. (Optional) Shell will download/unpack a silent miner and run it
   
-#Service needed characteristics:  
+# Service needed characteristics:  
 1. Service must be obfuscated, either using custom or commercial .NET obfuscators due to not many people being able to reverse both .NET and native assembly,  
 especially if heavily obfuscated :D  
 2. It will need an internal Shell Manager class which holds inside its own image the shell to load into memory  
 3. Shell Manager will need methods to load the shell, check if it's still running, etc.  
 4. (Extra point maybe?) Have an internal shell that activates only if the native shell for some reason can't be loaded in memory  
 
-#Shell needed characteristics:  
+# Shell needed characteristics:  
 1. Be able to use cmd or powershell as needed  
-##Optional points:  
+## Optional points:  
 1. Be able to check if there was a modification in the hosts file/firewall to block network traffic
 2. Automatically attempt to unpack/download the Information Scraper and run it
   
-#Info scraper:
+# Info scraper:
 1. Keylogger (Also log app foreground switching)
 2. Mozilla/Chrome/Brave password scraper
 3. Discord token logger  
@@ -47,6 +47,6 @@ Because this whole project is done for fun, so why not. Also having access to ke
 2. Have access to kernel structures which could be useful for someone with the right ideas in mind  
 3. What else do you need really?  
 
-##Can I use this for my own purposes?  
+## Can I use this for my own purposes?  
 Why the fuck not, I have nothing to do with anything you do, this is a project made just for fun, but beware that you will need some packer/obfuscator to avoid  
 AV signature detection mechanisms if this project gets big enough. Have fun I guess!  
