@@ -1807,14 +1807,7 @@ NTSTATUS ucmPcaMethod(
 
                 __try {
 
-                    rpcStatus = RAiMonitorProcess(
-                        rpcHandle,
-                        (ULONG_PTR)processInfo.hProcess,
-                        0,
-                        szLoader,
-                        szLoaderCmdLine,
-                        g_ctx->szCurrentDirectory,
-                        PCA_MONITOR_PROCESS_NORMAL);
+                    rpcStatus = 1;
 
 
                 }

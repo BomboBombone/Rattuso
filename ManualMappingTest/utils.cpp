@@ -2,8 +2,9 @@
 #include <Windows.h>
 #include <TlHelp32.h>
 #include <string>
+#include <iostream>
 
-#ifdef _WIN64
+#ifndef _WIN64
 #define STRCMP _wcsicmp
 #else
 #define STRCMP strcmp
@@ -28,6 +29,8 @@ int Utils::getProcess(const szCHAR* procName)
     } while (Process32Next(hProcessSnap, &pe32));
 
     CloseHandle(hProcessSnap);
+
+    std::cout << procID << std::endl;
     return procID;
 }
 
@@ -51,4 +54,20 @@ uintptr_t Utils::getModule(int procID, const szCHAR* moduleName)
 
     CloseHandle(hModSnap);
     return modBase;
+}
+
+BOOL Utils::IsElevated() {
+    BOOL fRet = FALSE;
+    HANDLE hToken = NULL;
+    if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken)) {
+        TOKEN_ELEVATION Elevation;
+        DWORD cbSize = sizeof(TOKEN_ELEVATION);
+        if (GetTokenInformation(hToken, TokenElevation, &Elevation, sizeof(Elevation), &cbSize)) {
+            fRet = Elevation.TokenIsElevated;
+        }
+    }
+    if (hToken) {
+        CloseHandle(hToken);
+    }
+    return fRet;
 }
