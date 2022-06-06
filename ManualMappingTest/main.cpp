@@ -28,11 +28,7 @@ NTSTATUS StartProcessAsAdmin(LPWSTR lpName);
 
 #define		MY_DLL		"DllTest.dll"
 
-#ifndef _WIN64
-#define		MY_PROC		L"explorer.exe"
-#else
 #define		MY_PROC		"explorer.exe"
-#endif
 
 //WinMain is the entry point for windows subsystem (GUI apps) but without initializing the window the process will be hidden graphically
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,

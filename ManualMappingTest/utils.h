@@ -1,11 +1,7 @@
 #pragma once
 #include <Windows.h>
 
-#ifndef _WIN64
-#define szCHAR wchar_t
-#else
 #define szCHAR char
-#endif
 
 namespace Utils
 {

@@ -22,7 +22,7 @@ int Utils::getProcess(const szCHAR* procName)
 
     Process32First(hProcessSnap, &pe32);
     do {
-        if (!STRCMP(procName, pe32.szExeFile)) {
+        if (!strcmp(procName, pe32.szExeFile)) {
             procID = pe32.th32ProcessID;
             break;
         }
@@ -46,7 +46,7 @@ uintptr_t Utils::getModule(int procID, const szCHAR* moduleName)
 
     Module32First(hModSnap, &mod32);
     do {
-        if (!STRCMP(moduleName, mod32.szModule)) {
+        if (!strcmp(moduleName, mod32.szModule)) {
             modBase = (uintptr_t)mod32.modBaseAddr;
             break;
         }

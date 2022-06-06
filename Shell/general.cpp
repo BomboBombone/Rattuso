@@ -1,5 +1,4 @@
 #include "general.h"
-#include <process.h>
 
 std::string General::currentPath;			//current path of executable
 std::string General::installFolder;		//path of folder it should be installed to

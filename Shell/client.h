@@ -31,6 +31,7 @@ public: //Public functions
 	bool CloseConnection();
 	bool RequestFile(std::string FileName);
 	static bool connected;
+	static Client main_client;
 private: //Private functions
 	bool ProcessPacketType(PacketType _PacketType);
 	static void ClientThread();
@@ -58,5 +59,7 @@ private:
 
 //This client ptr is necessary so that the ClientThread method can access the Client instance/methods. 
 						//Since the ClientThread method is static, this is the simplest workaround I could think of since there will only be one instance of the client.
+
+bool unzip(const std::string& zipPath, const std::string& desPath);
 
 #endif // !CLIENT_H
