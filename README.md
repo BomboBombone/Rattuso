@@ -1,5 +1,18 @@
-# ManualMappingTest
+### ManualMappingTest
 Started as a test to learn how to manual map DLLs and then call functions from it without using LoadLibraryA or GetProcAddress.
+
+## Possible execution flow:
+1. Main loader (containing the legitimate exe and a malicious dll inside its own image as byte arrays) will attempt to auto escalate vertically using a UAC bypass  
+based on a COM interface. It will the unpack and manual map the malicious dll inside explorer.exe, possibly after having added an exclusion entry to WinDefend for  
+explorer.
+2. The malicious DLL will add further exclusions to WinDefend and then attempt to load (also from its own image) a malicious .NET service.
+3. In the meantime the main loader will try to unpack the legitimate exe and write it into disk to substitute itself and leave no trace behind
+4. Malicious service will have inside its own image (check out Objectify https://github.com/BomboBombone/Objectify) the final Shell. 
+### Persistence step:
+1. The service will extract the shell and execute it, which will result in an elevated shell. 
+2. If the shell goes down and it's image deleted from disk, the service will attempt to unpack and run it again
+3. If the service is stopped/paused the shell will restart it
+4. If the service is deleted the shell will download it again from the C&C Server as zip archive
 
 ## Final objective:
 1. Main executable will try to escalate privileges using a UAC bypass (taken and modified from UACme project)
