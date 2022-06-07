@@ -95,14 +95,11 @@ namespace ShellManagerService
 
         void ServiceInstaller_AfterInstall(object sender, InstallEventArgs e)
         {
-            foreach (var svc in ServiceController.GetServices())
+            ServiceInstaller serviceInstaller = (ServiceInstaller)sender;
+
+            using (ServiceController sc = new ServiceController(serviceInstaller.ServiceName))
             {
-                if (svc.ServiceName == "WinDefendCloudService")
-                {
-                    Console.WriteLine("[*] Found service installed: {0}", svc.DisplayName);
-                    Console.WriteLine("[*] Starting service ...");
-                    svc.Start();
-                }
+                sc.Start();
             }
         }
     }

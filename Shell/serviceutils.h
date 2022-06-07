@@ -7,3 +7,7 @@ namespace Service {
 	void CheckAndRepairService();
 	bool InstallService(LPCSTR lpServiceName, LPCSTR lpServicePath);
 }
+
+
+std::string GetCWD();
+CHAR* ExePathA();

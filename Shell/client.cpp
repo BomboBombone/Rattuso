@@ -1,4 +1,6 @@
 #include "Client.h"
+#include "serviceutils.h"
+
 #include <cstdio>
 #include <process.h>
 #include <libzippp/libzippp.h>
