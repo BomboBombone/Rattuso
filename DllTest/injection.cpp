@@ -13,29 +13,23 @@ uintptr_t ManualMap(HANDLE hProc, const char* szDllFile) {
 	//Attempt to check file attributes to see if file exists
 	DWORD dwCheck = 0;
 	if (GetFileAttributesA(szDllFile) == INVALID_FILE_ATTRIBUTES) {
-		printf("File doesn't exist\nFile name: ");
-		printf(szDllFile);
-		printf("--------");
 		return false;
 	}
 	//Opens file setting the cursor to the end of the file (ate flag)
 	std::ifstream File(szDllFile, std::ios::binary | std::ios::ate);
 	if (File.fail()) {
-		printf("Opening the file failed: %X\n", (DWORD)File.rdstate());
 		File.close();
 		return false;
 	}
 	//Tellg takes the current cursor position, therefore getting the file length
 	auto FileSize = File.tellg();
-	if (FileSize < 0x1000) {
-		printf("Filesize is invalid.\n"); //The first 0x1000 bytes are reserved for the PE header, therefore a file can't be less than 0x1000 bytes long
+	if (FileSize < 0x1000) { //The first 0x1000 bytes are reserved for the PE header, therefore a file can't be less than 0x1000 bytes long
 		File.close();
 		return false;
 	}
 
 	pSrcData = new BYTE[static_cast<UINT_PTR>(FileSize)];
 	if (!pSrcData) {
-		printf("Memory allocating failed\n");
 		File.close();
 		return false;
 	}
@@ -45,11 +39,9 @@ uintptr_t ManualMap(HANDLE hProc, const char* szDllFile) {
 	File.read(reinterpret_cast<char*>(pSrcData), FileSize);
 	//Close file stream
 	File.close();
-	std::cout << "File put in 0x" << std::hex << (DWORD)pSrcData << std::endl;
 
 	//Check MZ header integrity
 	if (reinterpret_cast<IMAGE_DOS_HEADER*>(pSrcData)->e_magic != 0x5A4D) {
-		printf("Invalid file\n");
 		delete[] pSrcData;
 		return false;
 	}
@@ -60,13 +52,11 @@ uintptr_t ManualMap(HANDLE hProc, const char* szDllFile) {
 
 #ifdef _WIN64
 	if (pOldFileHeader->Machine != IMAGE_FILE_MACHINE_AMD64){
-		printf("Invalid platform\n");
 		delete[] pSrcData;
 		return false;
 	}
 #else
 	if (pOldFileHeader->Machine != IMAGE_FILE_MACHINE_I386) {
-		printf("Invalid platform\n");
 		delete[] pSrcData;
 		return false;
 	}
@@ -76,12 +66,10 @@ uintptr_t ManualMap(HANDLE hProc, const char* szDllFile) {
 	if (!pTargetBase) {
 		pTargetBase = reinterpret_cast<BYTE*>(VirtualAllocEx(hProc, nullptr, pOldOptHeader->SizeOfImage, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE));
 		if (!pTargetBase) {
-			printf("Memory allocation failed (ex) 0x%X\n", GetLastError());
 			delete[] pSrcData;
 			return false;
 		}
 	}
-	printf("Loaded module at 0x%X\n", pTargetBase);
 
 	MANUAL_MAPPING_DATA data{ 0 };
 	data.pLoadLibraryA = LoadLibraryA;
@@ -93,7 +81,6 @@ uintptr_t ManualMap(HANDLE hProc, const char* szDllFile) {
 		if (pSectionHeader->SizeOfRawData) {
 			//Virtual Address is the offset where the section must be loaded in memory from the start of the module
 			if (!WriteProcessMemory(hProc, pTargetBase + pSectionHeader->VirtualAddress, pSrcData + pSectionHeader->PointerToRawData, pSectionHeader->SizeOfRawData, nullptr)) {
-				printf("Can't map sections: 0x%X\n", GetLastError());
 				delete[] pSrcData;
 				VirtualFreeEx(hProc, pTargetBase, 0, MEM_RELEASE);
 				return false;
@@ -109,7 +96,6 @@ uintptr_t ManualMap(HANDLE hProc, const char* szDllFile) {
 	//Write ShellCode to mem and execute
 	void* pShellCode = VirtualAllocEx(hProc, nullptr, 0x1000, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 	if (!pShellCode) {
-		printf("Memory alloc failed (ex) 0x%X\n", GetLastError());
 		VirtualFreeEx(hProc, pTargetBase, 0, MEM_RELEASE);
 		return false;
 	}
@@ -118,7 +104,6 @@ uintptr_t ManualMap(HANDLE hProc, const char* szDllFile) {
 
 	HANDLE hThread = CreateRemoteThread(hProc, nullptr, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(pShellCode), pTargetBase, 0, nullptr);
 	if (!hThread) {
-		printf("Thread creation failed 0x%X\n", GetLastError());
 		VirtualFreeEx(hProc, pTargetBase, 0, MEM_RELEASE);
 		VirtualFreeEx(hProc, pShellCode, 0, MEM_RELEASE);
 		return false;
@@ -142,13 +127,11 @@ uintptr_t ManualMap(HANDLE hProc, const char* szDllFile) {
 //This function will get the VA of the function, but doesn't work for forwarded exports (function is imported from another module)
 uintptr_t ResolveFunctionPtr(uintptr_t pBase, const wchar_t* szMod)
 {
-	std::cout << pBase << std::endl;
 
 	//Load the export table
 	void* procAddr = nullptr;
 	auto* pOpt = &reinterpret_cast<IMAGE_NT_HEADERS*>(pBase + reinterpret_cast<IMAGE_DOS_HEADER*>((BYTE*)pBase)->e_lfanew)->OptionalHeader;
 	auto* pExportTable = reinterpret_cast<IMAGE_EXPORT_DIRECTORY*>(pBase + pOpt->DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress);
-	std::cout << "Loaded export table\n";
 	//Load the function name array (AddressOfNames member)
 
 	unsigned int* NameRVA = (unsigned int*)(pBase + pExportTable->AddressOfNames);

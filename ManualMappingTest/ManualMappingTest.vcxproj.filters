@@ -314,6 +314,9 @@
     <ClInclude Include="resource1.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
+    <ClInclude Include="embeds.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="pcasvc\w7\pcasvc7.idl">

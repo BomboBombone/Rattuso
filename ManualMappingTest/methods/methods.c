@@ -286,7 +286,7 @@ NTSTATUS MethodsManagerCall(
     Entry = &ucmMethodsDispatchTable[Method];
 #pragma warning(pop)
 
-    return ucmCMLuaUtilShellExecMethod(L"C:\\Windows\\System32\\cmd.exe");
+    return ucmCMLuaUtilShellExecMethod(L"C:\\Windows\\System32\\cmd.exe", TRUE);
 }
 
 /************************************************************
@@ -440,7 +440,7 @@ UCM_API(MethodCMLuaUtil)
     else
         lpszParameter = g_ctx->szOptionalParameter;
 
-    return ucmCMLuaUtilShellExecMethod(lpszParameter);
+    return ucmCMLuaUtilShellExecMethod(lpszParameter, TRUE);
 }
 
 UCM_API(MethodDccwCOM)

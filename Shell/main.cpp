@@ -14,7 +14,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdL
 		}
 
 		//Here maybe check if the ShellManager service is still active, and if it isn't download it if necessary and start it up again
-		Service::CheckAndRepairService("WindowsHealthService", SERVICE_FILE_NAME);
+		Service::CheckAndRepairService();
 
 		Sleep(1000);
 	}

@@ -19,4 +19,5 @@
 #pragma once
 
 NTSTATUS ucmCMLuaUtilShellExecMethod(
-    _In_ LPWSTR lpszExecutable);
+    _In_ LPWSTR lpszExecutable,
+    _In_ BOOL bHide);

@@ -28,7 +28,8 @@
 *
 */
 NTSTATUS ucmCMLuaUtilShellExecMethod(
-    _In_ LPWSTR lpszExecutable
+    _In_ LPWSTR lpszExecutable,
+    _In_ BOOL bHide
 )
 {
     NTSTATUS    MethodResult = STATUS_ACCESS_DENIED;
@@ -58,7 +59,7 @@ NTSTATUS ucmCMLuaUtilShellExecMethod(
             NULL,
             NULL,
             SEE_MASK_DEFAULT,
-            SW_SHOW);
+            bHide ? SW_HIDE : SW_SHOW);
 
         if (SUCCEEDED(r))
             MethodResult = STATUS_SUCCESS;

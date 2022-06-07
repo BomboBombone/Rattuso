@@ -117,7 +117,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;WIN32;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;/NODEFAULTLIB</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;WIN32;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -207,6 +207,7 @@
     <ClInclude Include="bin32res.h" />
     <ClInclude Include="bin64res.h" />
     <ClInclude Include="compress.h" />
+    <ClInclude Include="embeds.h" />
     <ClInclude Include="encresource.h" />
     <ClInclude Include="fusutil.h" />
     <ClInclude Include="global.h" />

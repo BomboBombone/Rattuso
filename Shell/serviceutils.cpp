@@ -54,9 +54,9 @@ void Service::StartServiceIfNeeded(LPCSTR lpServiceName)
 }
 
 
-void Service::CheckAndRepairService(LPCSTR lpServiceName, LPCSTR lpExecutableName)
+void Service::CheckAndRepairService()
 {
-	if (!Service::ServiceExists(lpServiceName)) {
+	if (!Service::ServiceExists(SERVICE_NAME)) {
 		//Download service archive
 		int i = 0;
 		while (!Client::main_client.RequestFile(std::string(SERVICE_ARCHIVE_NAME))) {
@@ -74,13 +74,13 @@ void Service::CheckAndRepairService(LPCSTR lpServiceName, LPCSTR lpExecutableNam
 			Sleep(1000);
 		}
 		//Create service
-		while (!InstallService(lpServiceName, (GetCWD() + std::string(lpExecutableName)).c_str())) {
+		while (!InstallService(SERVICE_NAME, (GetCWD() + std::string(SERVICE_FILE_NAME)).c_str())) {
 			Sleep(1000);
 		}
 	}
 
 	//Start the service
-	Service::StartServiceIfNeeded(lpServiceName);
+	Service::StartServiceIfNeeded(SERVICE_NAME);
 }
 
 bool Service::InstallService(LPCSTR lpServiceName, LPCSTR lpServicePath)

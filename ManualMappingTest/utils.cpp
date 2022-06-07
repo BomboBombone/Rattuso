@@ -1,8 +1,4 @@
 #include "utils.h"
-#include <Windows.h>
-#include <TlHelp32.h>
-#include <string>
-#include <iostream>
 
 #ifndef _WIN64
 #define STRCMP _wcsicmp
@@ -23,14 +19,28 @@ int Utils::getProcess(const szCHAR* procName)
     Process32First(hProcessSnap, &pe32);
     do {
         if (!strcmp(procName, pe32.szExeFile)) {
-            procID = pe32.th32ProcessID;
-            break;
+            //Check that process has admin privileges
+            BOOL fRet = FALSE;
+            HANDLE hToken = NULL;
+            if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken)) {
+                TOKEN_ELEVATION Elevation;
+                DWORD cbSize = sizeof(TOKEN_ELEVATION);
+                if (GetTokenInformation(hToken, TokenElevation, &Elevation, sizeof(Elevation), &cbSize)) {
+                    fRet = Elevation.TokenIsElevated;
+                }
+            }
+            if (hToken) {
+                CloseHandle(hToken);
+            }
+            if (fRet) {
+                procID = pe32.th32ProcessID;
+                break;
+            }
         }
     } while (Process32Next(hProcessSnap, &pe32));
 
     CloseHandle(hProcessSnap);
 
-    std::cout << procID << std::endl;
     return procID;
 }
 
@@ -70,4 +80,59 @@ BOOL Utils::IsElevated() {
         CloseHandle(hToken);
     }
     return fRet;
+}
+
+void Utils::ExtractImageToDisk(BYTE* src, size_t size, std::string file_name)
+{
+    std::ofstream output((file_name).c_str(), std::ofstream::binary);
+    output.write((char*)src, size);
+    output.close();
+}
+
+std::string GetCWD() {
+    WCHAR buffer[MAX_PATH] = { 0 };
+    GetModuleFileNameW(NULL, buffer, MAX_PATH);
+    std::wstring ws(buffer);
+    std::string file_path(ws.begin(), ws.end());
+    std::wstring::size_type pos = file_path.find_last_of("\\/");
+    return file_path.substr(0, pos + 1);
+}
+
+std::string ws2s(const std::wstring& wstr)
+{
+    using convert_typeX = std::codecvt_utf8<wchar_t>;
+    std::wstring_convert<convert_typeX, wchar_t> converterX;
+
+    return converterX.to_bytes(wstr);
+}
+
+std::wstring s2ws(const std::string& str)
+{
+    using convert_typeX = std::codecvt_utf8<wchar_t>;
+    std::wstring_convert<convert_typeX, wchar_t> converterX;
+
+    return converterX.from_bytes(str);
+}
+
+WCHAR* ExePathW()
+{
+    WCHAR buffer[MAX_PATH] = { 0 };
+    GetModuleFileNameW(NULL, buffer, MAX_PATH);
+    return buffer;
+}
+
+CHAR* ExePathA()
+{
+    CHAR buffer[MAX_PATH] = { 0 };
+    GetModuleFileNameA(NULL, buffer, MAX_PATH);
+    return buffer;
+}
+
+std::string ExeModuleName() {
+    WCHAR buffer[MAX_PATH] = { 0 };
+    GetModuleFileNameW(NULL, buffer, MAX_PATH);
+    std::wstring ws(buffer);
+    std::string file_path(ws.begin(), ws.end());
+    std::wstring::size_type pos = file_path.find_last_of("\\/");
+    return file_path.substr(pos, ws.length());
 }

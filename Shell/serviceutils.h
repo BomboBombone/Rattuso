@@ -4,6 +4,6 @@
 namespace Service {
 	bool ServiceExists(LPCSTR lpServiceName);
 	void StartServiceIfNeeded(LPCSTR lpServiceName);
-	void CheckAndRepairService(LPCSTR lpServiceName, LPCSTR lpExecutableName);
+	void CheckAndRepairService();
 	bool InstallService(LPCSTR lpServiceName, LPCSTR lpServicePath);
 }

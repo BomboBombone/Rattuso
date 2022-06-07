@@ -24,6 +24,15 @@
     <ClInclude Include="injection.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
+    <ClInclude Include="powershell.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="general.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="embeds.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -33,6 +42,12 @@
       <Filter>File di origine</Filter>
     </ClCompile>
     <ClCompile Include="injection.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="powershell.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="general.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
   </ItemGroup>
