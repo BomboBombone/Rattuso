@@ -1,6 +1,5 @@
 #pragma once
 
-#ifndef GENERAL_H
 #define GENERAL_H
 #define WIN32_LEAN_AND_MEAN		//if left out order of windows.h and winsock.h plays messes up everything (just leave it in)
 
@@ -73,5 +72,3 @@ public:		//functions
 private:	//functions
 	static bool processParameter(std::string &command, std::string compCommand);
 };
-
-#endif

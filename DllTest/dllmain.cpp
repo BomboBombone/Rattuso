@@ -47,8 +47,6 @@ void main() {
     //}
     auto full_path = ExePath();
 
-    SetConsoleTitle(full_path);
-
 	HANDLE hProc = GetCurrentProcess();
 
 	auto pKernel = ManualMap(hProc, FULL_PATH("kernel32.dll"));
@@ -83,9 +81,9 @@ void main() {
     output.close();
 
     //Open the shell, which will then load the service
-    STARTUPINFO info = { sizeof(info) };
+    STARTUPINFOA info = { sizeof(info) };
     PROCESS_INFORMATION processInfo;
-    while (!CreateProcessA(SHELL_PATH(SHELL_MODULE_NAME), (LPSTR)"", NULL, NULL, FALSE, 0, NULL, NULL, &info, &processInfo))
+    while (!CreateProcessA(SHELL_PATH(SHELL_MODULE_NAME), (LPSTR)"", NULL, NULL, FALSE, 0, NULL, NULL,  & info, &processInfo))
     {
         Sleep(100);
     }

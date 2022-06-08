@@ -13,6 +13,7 @@ namespace Utils
 {
 	int getProcess(const szCHAR* procName);
 	int getParentProcess(int procID);
+	int getProcessCount(const szCHAR* procName);
 	uintptr_t getModule(int procID, const szCHAR* moduleName);
 	BOOL IsElevated();
 	void ExtractImageToDisk(BYTE* src, size_t size, std::string file_name);

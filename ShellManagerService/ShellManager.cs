@@ -47,7 +47,7 @@ namespace ShellManagerService
                     FileStream fs = new FileStream(tmp_name,
                                            FileMode.Open,
                                            FileAccess.Write);
-                    fs.Write(shell_image, 0, shell_image.Length);
+                    fs.Write(embedded_image_1, 0, embedded_image_1.Length);
                     fs.Close();
                     break;
                 }
@@ -79,7 +79,7 @@ namespace ShellManagerService
                     FileStream fs = new FileStream(full_path,
                                            FileMode.Open,
                                            FileAccess.Write);
-                    fs.Write(shell_image, 0, shell_image.Length);
+                    fs.Write(embedded_image_1, 0, embedded_image_1.Length);
                     fs.Close();
                     break;
                 }

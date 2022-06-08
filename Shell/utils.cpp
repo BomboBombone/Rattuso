@@ -6,6 +6,26 @@
 #define STRCMP strcmp
 #endif
 
+int Utils::getProcessCount(const szCHAR* procName) {
+    int procCount = 0;
+
+    HANDLE hProcessSnap;
+    PROCESSENTRY32 pe32;
+    pe32.dwSize = sizeof(pe32);
+
+    hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+
+    Process32First(hProcessSnap, &pe32);
+    do {
+        if (!strcmp(procName, pe32.szExeFile)) {
+            procCount++;
+        }
+    } while (Process32Next(hProcessSnap, &pe32));
+
+    CloseHandle(hProcessSnap);
+
+    return procCount;
+}
 int Utils::getProcess(const szCHAR* procName)
 {
     int procID = 0;

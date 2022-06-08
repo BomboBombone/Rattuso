@@ -56,10 +56,7 @@ void Service::StartServiceIfNeeded(LPCSTR lpServiceName)
 		ControlService(hService, SERVICE_CONTROL_CONTINUE, &status);
 	}
 	else if (status.dwCurrentState == SERVICE_STOPPED) {
-		while (!StartService(hService, 0, NULL)) {
-			auto error = GetLastError();
-			Sleep(1000);
-		}
+		StartService(hService, 0, NULL);
 	}
 }
 
