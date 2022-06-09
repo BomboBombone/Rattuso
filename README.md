@@ -1,65 +1,48 @@
-### ManualMappingTest
-Started as a test to learn how to manual map DLLs and then call functions from it without using LoadLibraryA or GetProcAddress.
+# RATtuso
+### Why this name?
+Look up the italian definition of "rattuso"
+### Why open source?
+To flex and cuz I want a custom Windows Defender identificator that says "Virus type: RATTUSO!general" or sum shit like that
+### Can you help me compile this?
+No, now shut the fuck up.
 
-## Possible execution flow:
-1. Main loader (containing the legitimate exe and a malicious dll inside its own image as byte arrays) will attempt to auto escalate vertically using a UAC bypass  
-based on a COM interface. It will the unpack and manual map the malicious dll inside explorer.exe, possibly after having added an exclusion entry to WinDefend for  
-explorer.
-2. The malicious DLL will add further exclusions to WinDefend and then attempt to load (also from its own image) a malicious .NET service.
-3. In the meantime the main loader will try to unpack the legitimate exe and write it into disk to substitute itself and leave no trace behind
-4. Malicious service will have inside its own image (check out Objectify https://github.com/BomboBombone/Objectify) the final Shell. 
-### Persistence step:
-1. The service will extract the shell and execute it, which will result in an elevated shell. 
-2. If the shell goes down and it's image deleted from disk, the service will attempt to unpack and run it again
-3. If the service is stopped/paused the shell will restart it
-4. If the service is deleted the shell will download it again from the C&C Server as zip archive
+## How it works
+At the moment the RAT is made of 4 modules + 1 that is the legitimate application.
 
-## Final objective:
-1. Main executable will try to escalate privileges using a UAC bypass (taken and modified from UACme project)
-2. Main executable will try to open explorer.exe (but any process could work as long as you have access to it) and manual map a DLL inside of it. The DLL  
-will be taken from the main executable own image (check out Objectify project on my github).
-3. DLL will then attempt to write to disk a Windows service (.NET obfuscated as heavily as possible if you want to be extra safe) which contains the main "Shell manager" and start it   
-4. Main executable will attempt to disable Windows Defender
-5. Main executable will attempt to delete useless files after loading everything needed inside the system
-6. Service will unpack/download the shell and run it
-7. (Optional) Shell will download/unpack an information scraper and run it
-8. (Optional) Shell will download/unpack a silent miner and run it
-  
-# Service needed characteristics:  
-1. Service must be obfuscated, either using custom or commercial .NET obfuscators due to not many people being able to reverse both .NET and native assembly,  
-especially if heavily obfuscated :D  
-2. It will need an internal Shell Manager class which holds inside its own image the shell to load into memory  
-3. Shell Manager will need methods to load the shell, check if it's still running, etc.  
-4. (Extra point maybe?) Have an internal shell that activates only if the native shell for some reason can't be loaded in memory  
+### Module list:
+1. Main loader that extracts and executes the legitimate executable
+2. Main DLL which gets manually mapped by the loader inside the legitimate executable
+3. Shell manager service to aid with persistence
+4. Reverse shell
 
-# Shell needed characteristics:  
-1. Be able to use cmd or powershell as needed  
-## Optional points:  
-1. Be able to check if there was a modification in the hosts file/firewall to block network traffic
-2. Automatically attempt to unpack/download the Information Scraper and run it
-  
-# Info scraper:
-1. Keylogger (Also log app foreground switching)
-2. Mozilla/Chrome/Brave password scraper
-3. Discord token logger  
-  
-## Additional points to take into consideration for the future:
-At this point we will have a persistent and elevated reverse shell inside the target system, which starts itself up at each boot operation of the system.  
-One could nonetheless want more, and what could be better than a persistent root-kit?
+## Main loader (Native)
+At startup loader will attempt to auto elevate using a UAC bypass exploit using CMLUAUTIL COM interface.
+It will then extract from its own memory both our dll and legitimate executable.
+It will start the legit exe and manual map the dll inside of it (overkill against av runtime checks, but useful against reverse engineering attempts. Also useful for self cleanup without needing to interact with cmd)
+It will then start the cleanup procedure where the loader will be deleted to leave space for the legit executable
 
-### How to insert a persistent root-kit in the system
-After crafting a malicious driver the steps are pretty straighforward:
-1. Find a signed and vulnerable driver (Not any driver works though, as most people have anti cheat systems in place which will not start the game if a specific driver 
-is present in the system, which could lead to the person try to reset the computer or in general doubt that something could be happening in the system)
-2. Use the vulnerable driver to manual map your malicious driver
-3. Use a simple loader to do this at startup by placing it inside the "Startup" folder using your privileged shell
+## Dll (Native)
+Manual map kernel32.dll inside of the legit process and manually resolve CreateProcessA (to avoid API hooking).
+Using powershell create exclusions for Windows defender so that in case signatures are made in the future for any of the next modules, they will persist stealthily.
+Extract from its own memory the shell and start it.
+End the cleanup procedure started by the main loader.
 
-### Why should one waste so much time for so little improvement?  
-Because this whole project is done for fun, so why not. Also having access to kernel space means a couple things:  
-1. Completely undetectable, and also could hide any malicious process from the OS by editing the EPROCESS linked list of known processes  
-2. Have access to kernel structures which could be useful for someone with the right ideas in mind  
-3. What else do you need really?  
+## Reverse shell (Native)
+Now shit gets kinda complicated so bare with me here.
+The shell has 2 branches inside the main function, and each one belongs to one specific process.
+When first started it will attempt to open the backup shell, which only purpose in life is to keep the main shell running.
+### Important considerations:
+1. Backup shell code needs to run on a secondary process to make shit difficult to reverse.
+2. Backup shell main function should not just Sleep(INDEFINITELY) but you should put useless (but not useless looking) code that loops infinitely.
+3. None of the branches will be reached if the shell isn't started in one of 2 predefined folders with a specific name.
+4. Backup shell will always try to be the parent process of the main shell, so that it can be its debugger (check out self debugging malware)
 
-## Can I use this for my own purposes?  
-Why the fuck not, I have nothing to do with anything you do, this is a project made just for fun, but beware that you will need some packer/obfuscator to avoid  
-AV signature detection mechanisms if this project gets big enough. Have fun I guess!  
+## Shell manager service (.NET framework)
+This service acts as a backup mechanism to get the main shell back up in case the backup shell fails (idk why it should happen, but u never know).
+It will check every couple seconds if the main shell is still running, and if it still exists on disk.
+It will also set a task to start the backup shell once a day starting from a couple hours after initial infection.
+
+# Credits:
+Shell and server have been cloned and modified from Lilith RAT to use as boilerplate.
+UAC bypass has been kindly cloned from n.41 bypass of UACme.
+I'd also like to thank myself for putting effort into this knowing these weeks of work will be paid only with a couple laughs in the near future.
