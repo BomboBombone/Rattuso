@@ -338,4 +338,9 @@
       <Filter>File di risorse</Filter>
     </ResourceCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\Downloads\Athens-circle.ico">
+      <Filter>File di risorse</Filter>
+    </Image>
+  </ItemGroup>
 </Project>

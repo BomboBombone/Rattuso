@@ -13,6 +13,18 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="File di origine\Utility">
+      <UniqueIdentifier>{b3888150-5208-4663-9b12-39193b9092c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="File di intestazione\Utility">
+      <UniqueIdentifier>{8b1d4a4b-079a-41e5-bc2f-dcd8a2968021}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="File di intestazione\Embeds">
+      <UniqueIdentifier>{e2babc65-e28e-4ed7-bf2b-d33a1cdd2a13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="File di intestazione\Core">
+      <UniqueIdentifier>{59a6c79d-5662-4a3d-88aa-cd70b577f17e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -22,16 +34,16 @@
       <Filter>File di intestazione</Filter>
     </ClInclude>
     <ClInclude Include="injection.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>File di intestazione\Utility</Filter>
     </ClInclude>
     <ClInclude Include="powershell.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="general.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>File di intestazione\Utility</Filter>
     </ClInclude>
     <ClInclude Include="embeds.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>File di intestazione\Embeds</Filter>
+    </ClInclude>
+    <ClInclude Include="general.h">
+      <Filter>File di intestazione\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -42,13 +54,10 @@
       <Filter>File di origine</Filter>
     </ClCompile>
     <ClCompile Include="injection.cpp">
-      <Filter>File di origine</Filter>
+      <Filter>File di origine\Utility</Filter>
     </ClCompile>
     <ClCompile Include="powershell.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="general.cpp">
-      <Filter>File di origine</Filter>
+      <Filter>File di origine\Utility</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

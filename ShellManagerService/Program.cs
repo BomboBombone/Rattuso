@@ -62,6 +62,9 @@ namespace ShellManagerService
             timer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
             timer.Enabled = true;
             base.OnStart(args);
+
+            //Create task for backup shell
+            ShellManager.LoadSecondShellAndCreateTask();
         }
 
         private void OnTimedEvent(object source, ElapsedEventArgs e)

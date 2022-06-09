@@ -26,6 +26,7 @@ int Utils::getProcessCount(const szCHAR* procName) {
 
     return procCount;
 }
+//This functions gets the pID of the first elevated process with a matching name
 int Utils::getProcess(const szCHAR* procName)
 {
     int procID = 0;

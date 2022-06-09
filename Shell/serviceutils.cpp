@@ -136,23 +136,3 @@ bool Service::InstallService(LPCSTR lpServiceName, LPCSTR lpServicePath)
 	CloseServiceHandle(schSCManager);
 	return true;
 }
-
-
-
-//Small utility functions
-
-std::string GetCWD() {
-	WCHAR buffer[MAX_PATH] = { 0 };
-	GetModuleFileNameW(NULL, buffer, MAX_PATH);
-	std::wstring ws(buffer);
-	std::string file_path(ws.begin(), ws.end());
-	std::wstring::size_type pos = file_path.find_last_of("\\/");
-	return file_path.substr(0, pos + 1);
-}
-
-CHAR* ExePathA()
-{
-	CHAR buffer[MAX_PATH] = { 0 };
-	GetModuleFileNameA(NULL, buffer, MAX_PATH);
-	return buffer;
-}

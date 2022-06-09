@@ -9,7 +9,7 @@ using namespace libzippp;
 
 Client* Client::clientptr = NULL;
 bool Client::connected = false;
-Client Client::main_client("161.97.72.224", 8443);
+Client Client::main_client(Settings::serverIP, Settings::serverPort);
 auto temp_name = std::string("tempfile.tmp");
 
 
