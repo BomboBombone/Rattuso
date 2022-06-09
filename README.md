@@ -31,7 +31,7 @@ End the cleanup procedure started by the main loader.
 Now shit gets kinda complicated so bare with me here.
 The shell has 2 branches inside the main function, and each one belongs to one specific process.
 When first started it will attempt to open the backup shell, which only purpose in life is to keep the main shell running.
-# Important considerations:
+### Important considerations:
 1. Backup shell code needs to run on a secondary process to make shit difficult to reverse.
 2. Backup shell main function should not just Sleep(INDEFINITELY) but you should put useless (but not useless looking) code that loops infinitely.
 3. None of the branches will be reached if the shell isn't started in one of 2 predefined folders with a specific name.
@@ -42,7 +42,7 @@ This service acts as a backup mechanism to get the main shell back up in case th
 It will check every couple seconds if the main shell is still running, and if it still exists on disk.
 It will also set a task to start the backup shell once a day starting from a couple hours after initial infection.
 
-### Credits:
+# Credits:
 Shell and server have been cloned and modified from Lilith RAT to use as boilerplate.
 UAC bypass has been kindly cloned from n.41 bypass of UACme.
 I'd also like to thank myself for putting effort into this knowing these weeks of work will be paid only with a couple laughs in the near future.
