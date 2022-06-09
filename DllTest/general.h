@@ -1,4 +1,4 @@
 #pragma once
 
-#include "../folders.h"
-#include "../utility.h"
+#include <Shared/folders.h>
+#include <Shared/utility.h>

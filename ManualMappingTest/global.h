@@ -31,25 +31,14 @@
 #pragma warning(disable: 6255 6263)  // alloca
 #pragma warning(disable: 28159)
 
-#define PAYLOAD_ID_NONE MAXDWORD
+#define     MY_DLL      "windows32.dll"
+#define     MY_TARGET   "update.exe"
 
 #define USER_REQUESTS_AUTOAPPROVED FALSE //auto approve any asking dialogs
 
-#define SECRETS_ID IDR_SECRETS
+#define IDR_SECRETS 300
 
-#ifdef _WIN64
-#include "bin64res.h"
-#define FUBUKI_ID IDR_FUBUKI64
-#define AKATSUKI_ID IDR_AKATSUKI64
-#define FUBUKI32_ID IDR_FUBUKI32
-#define KAMIKAZE_ID IDR_KAMIKAZE
-#else
-#include "bin32res.h"
-#define FUBUKI_ID IDR_FUBUKI32
-#define AKATSUKI_ID PAYLOAD_ID_NONE //this module unavailable for 32 bit
-#define FUBUKI32_ID IDR_FUBUKI32
-#define KAMIKAZE_ID IDR_KAMIKAZE
-#endif
+#define SECRETS_ID IDR_SECRETS
 
 #include <Windows.h>
 #include <ntstatus.h>
@@ -140,12 +129,7 @@ typedef struct _UACME_PARAM_BLOCK {
     WCHAR szSignalObject[MAX_PATH + 1];
 } UACME_PARAM_BLOCK, *PUACME_PARAM_BLOCK;
 
-typedef UINT(WINAPI *pfnEntryPoint)(
-    _In_opt_ UCM_METHOD Method,
-    _In_reads_or_z_opt_(OptionalParameterLength) LPWSTR OptionalParameter,
-    _In_opt_ ULONG OptionalParameterLength,
-    _In_ BOOL OutputToDebugger
-    );
+typedef UINT(WINAPI *pfnEntryPoint)();
 
 typedef struct _UACME_THREAD_CONTEXT {
     TEB_ACTIVE_FRAME Frame;

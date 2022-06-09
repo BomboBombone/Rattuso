@@ -11,7 +11,8 @@
 void CreateDebugConsole();
 bool FileExists(const char* pFilePath);
 BOOL IsElevated();
-CHAR* ExePath();
+CHAR* ExePathA();
+WCHAR* ExePathW();
 std::string GetCWD();
 
 void PauseExecution();

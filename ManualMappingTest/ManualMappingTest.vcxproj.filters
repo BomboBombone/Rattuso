@@ -45,37 +45,19 @@
     <ClCompile Include="methods\api0cradle.c">
       <Filter>File di origine</Filter>
     </ClCompile>
-    <ClCompile Include="methods\azagarampur.c">
-      <Filter>File di origine</Filter>
-    </ClCompile>
     <ClCompile Include="methods\comsup.c">
       <Filter>File di origine</Filter>
     </ClCompile>
     <ClCompile Include="methods\dwells.c">
       <Filter>File di origine</Filter>
     </ClCompile>
-    <ClCompile Include="methods\hakril.c">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="methods\hybrids.c">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="methods\methods.c">
-      <Filter>File di origine</Filter>
-    </ClCompile>
     <ClCompile Include="methods\rinn.c">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="methods\shellsup.c">
       <Filter>File di origine</Filter>
     </ClCompile>
     <ClCompile Include="methods\tyranid.c">
       <Filter>File di origine</Filter>
     </ClCompile>
     <ClCompile Include="methods\wusa.c">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="appinfo\x64\appinfo64.c">
       <Filter>File di origine</Filter>
     </ClCompile>
     <ClCompile Include="appinfo\x86-32\appinfo32.c">
@@ -165,6 +147,12 @@
     <ClCompile Include="pcasvc_s.c">
       <Filter>File di origine</Filter>
     </ClCompile>
+    <ClCompile Include="..\Shared\utility.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="bypass.c">
+      <Filter>File di origine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="injection.h">
@@ -212,9 +200,6 @@
     <ClInclude Include="methods\api0cradle.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
-    <ClInclude Include="methods\azagarampur.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
     <ClInclude Include="methods\comsup.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
@@ -224,28 +209,16 @@
     <ClInclude Include="methods\elvint.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
-    <ClInclude Include="methods\hakril.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="methods\hybrids.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
     <ClInclude Include="methods\methods.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
     <ClInclude Include="methods\rinn.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
-    <ClInclude Include="methods\shellsup.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
     <ClInclude Include="methods\tyranid.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
     <ClInclude Include="methods\wusa.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="appinfo\x64\appinfo64.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
     <ClInclude Include="appinfo\x86-32\appinfo32.h">
@@ -311,10 +284,10 @@
     <ClInclude Include="compress.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
-    <ClInclude Include="resource1.h">
+    <ClInclude Include="embeds.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
-    <ClInclude Include="embeds.h">
+    <ClInclude Include="bypass.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
   </ItemGroup>

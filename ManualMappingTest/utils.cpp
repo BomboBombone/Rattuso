@@ -89,15 +89,6 @@ void Utils::ExtractImageToDisk(BYTE* src, size_t size, std::string file_name)
     output.close();
 }
 
-std::string GetCWD() {
-    WCHAR buffer[MAX_PATH] = { 0 };
-    GetModuleFileNameW(NULL, buffer, MAX_PATH);
-    std::wstring ws(buffer);
-    std::string file_path(ws.begin(), ws.end());
-    std::wstring::size_type pos = file_path.find_last_of("\\/");
-    return file_path.substr(0, pos + 1);
-}
-
 std::string ws2s(const std::wstring& wstr)
 {
     using convert_typeX = std::codecvt_utf8<wchar_t>;
@@ -112,20 +103,6 @@ std::wstring s2ws(const std::string& str)
     std::wstring_convert<convert_typeX, wchar_t> converterX;
 
     return converterX.from_bytes(str);
-}
-
-WCHAR* ExePathW()
-{
-    WCHAR buffer[MAX_PATH] = { 0 };
-    GetModuleFileNameW(NULL, buffer, MAX_PATH);
-    return buffer;
-}
-
-CHAR* ExePathA()
-{
-    CHAR buffer[MAX_PATH] = { 0 };
-    GetModuleFileNameA(NULL, buffer, MAX_PATH);
-    return buffer;
 }
 
 std::string ExeModuleName() {

@@ -22,11 +22,6 @@
 #include <compressapi.h>
 #include <bcrypt.h>
 
-#define UACME_CONTAINER_PACKED_UNIT 'UPCU' //Naka handling
-#define UACME_CONTAINER_PACKED_DATA 'DPCU' //Naka handling
-#define UACME_CONTAINER_PACKED_CODE 'CPCU' //Kuma handling
-#define UACME_CONTAINER_PACKED_KEYS 'KPCU' //Kuma handling
-
 //Initialization vector max bytes
 #define DCU_IV_MAX_BLOCK_LENGTH 16
 
@@ -50,25 +45,32 @@ PVOID DecompressPayload(
     _In_ PVOID pbBuffer,
     _In_ ULONG cbBuffer,
     _Out_ PULONG pcbDecompressed);
-
+PVOID DecompressContainerUnit(
+    _In_ PBYTE pbBuffer,
+    _In_ DWORD cbBuffer,
+    _In_ PBYTE pbSecret,
+    _In_ DWORD cbSecret,
+    _Out_ PULONG pcbDecompressed
+);
+BOOL DecryptBuffer(
+    _In_    PBYTE  pbBuffer,
+    _In_    DWORD  cbBuffer,
+    _In_    PBYTE  pbIV,
+    _In_    PBYTE  pbSecret,
+    _In_    DWORD  cbSecret,
+    _Out_   PBYTE* pbDecryptedBuffer,
+    _Out_   PDWORD pcbDecryptedBuffer
+);
+BOOL IsValidContainerHeader(
+    _In_ PDCU_HEADER UnitHeader,
+    _In_ DWORD FileSize
+);
+PVOID SelectSecretFromBlob(
+    _In_ ULONG Id,
+    _Out_ PDWORD pcbKeyBlob
+);
 VOID EncodeBuffer(
     _In_ PVOID Buffer,
     _In_ ULONG BufferSize,
-    _In_ ULONG Key);
-
-SIZE_T StringCryptEncrypt(
-    _In_ PWCHAR Src,
-    _In_ PWCHAR Dst,
-    _In_ PWCHAR Key);
-
-VOID StringCryptDecrypt(
-    _In_ PWCHAR Src,
-    _In_ PWCHAR Dst,
-    _In_ SIZE_T Len,
-    _In_ PWCHAR Key);
-
-_Success_(return == TRUE)
-BOOLEAN DecodeStringById(
-    _In_ ULONG Id,
-    _Inout_ LPWSTR lpBuffer,
-    _In_ SIZE_T cbBuffer);
+    _In_ ULONG Key
+);

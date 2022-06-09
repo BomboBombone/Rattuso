@@ -44,10 +44,7 @@ INT ucmSehHandler(
             if (uctx->ucmMain) {
                 uctx->ucmMain = (pfnEntryPoint)supDecodePointer(uctx->ucmMain);
 
-                uctx->ReturnedResult = uctx->ucmMain(UacMethodInvalid,
-                    NULL,
-                    0,
-                    FALSE);
+                uctx->ReturnedResult = uctx->ucmMain();
             }
         }
         return EXCEPTION_EXECUTE_HANDLER;

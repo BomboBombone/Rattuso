@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -89,11 +89,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir);</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
+      <AdditionalLibraryDirectories>$(SolutionDir);</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -104,6 +106,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir);</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -111,6 +114,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
+      <AdditionalLibraryDirectories>$(SolutionDir);</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -119,11 +123,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;WIN32;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir);</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
+      <AdditionalLibraryDirectories>$(SolutionDir);</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -134,6 +140,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir);</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -141,27 +148,24 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
+      <AdditionalLibraryDirectories>$(SolutionDir);</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\Shared\utility.cpp" />
     <ClCompile Include="aic.c" />
-    <ClCompile Include="appinfo\x64\appinfo64.c" />
     <ClCompile Include="appinfo\x86-32\appinfo32.c" />
     <ClCompile Include="appinfo_s.c" />
+    <ClCompile Include="bypass.c" />
     <ClCompile Include="compress.c" />
     <ClCompile Include="fusutil.c" />
     <ClCompile Include="injection.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="makecab.c" />
     <ClCompile Include="methods\api0cradle.c" />
-    <ClCompile Include="methods\azagarampur.c" />
     <ClCompile Include="methods\comsup.c" />
     <ClCompile Include="methods\dwells.c" />
-    <ClCompile Include="methods\hakril.c" />
-    <ClCompile Include="methods\hybrids.c" />
-    <ClCompile Include="methods\methods.c" />
     <ClCompile Include="methods\rinn.c" />
-    <ClCompile Include="methods\shellsup.c" />
     <ClCompile Include="methods\tyranid.c" />
     <ClCompile Include="methods\wusa.c" />
     <ClCompile Include="pcasvc\w7\x64\pcasvc7_64.c">
@@ -202,10 +206,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="aic.h" />
-    <ClInclude Include="appinfo\x64\appinfo64.h" />
     <ClInclude Include="appinfo\x86-32\appinfo32.h" />
     <ClInclude Include="bin32res.h" />
     <ClInclude Include="bin64res.h" />
+    <ClInclude Include="bypass.h" />
     <ClInclude Include="compress.h" />
     <ClInclude Include="embeds.h" />
     <ClInclude Include="encresource.h" />
@@ -214,22 +218,17 @@
     <ClInclude Include="injection.h" />
     <ClInclude Include="makecab.h" />
     <ClInclude Include="methods\api0cradle.h" />
-    <ClInclude Include="methods\azagarampur.h" />
     <ClInclude Include="methods\comsup.h" />
     <ClInclude Include="methods\dwells.h" />
     <ClInclude Include="methods\elvint.h" />
-    <ClInclude Include="methods\hakril.h" />
-    <ClInclude Include="methods\hybrids.h" />
     <ClInclude Include="methods\methods.h" />
     <ClInclude Include="methods\rinn.h" />
-    <ClInclude Include="methods\shellsup.h" />
     <ClInclude Include="methods\tyranid.h" />
     <ClInclude Include="methods\wusa.h" />
     <ClInclude Include="pcasvc\w7\x64\pcasvc7_64.h" />
     <ClInclude Include="pcasvc\w7\x86-32\pcasvc7_32.h" />
     <ClInclude Include="pcasvc_h.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="resource1.h" />
     <ClInclude Include="Shared\cmdline.h" />
     <ClInclude Include="Shared\consts.h" />
     <ClInclude Include="Shared\hde\hde64.h" />

@@ -325,12 +325,7 @@ BOOL supCreateSharedParametersBlock(
 VOID supDestroySharedParametersBlock(
     _In_ PVOID ucmContext);
 
-PVOID supCreateUacmeContext(
-    _In_ ULONG Method,
-    _In_reads_or_z_opt_(OptionalParameterLength) LPWSTR OptionalParameter,
-    _In_ ULONG OptionalParameterLength,
-    _In_ PVOID DecompressRoutine,
-    _In_ BOOL OutputToDebugger);
+PVOID supCreateUacmeContext(_In_ PVOID DecompressRoutine);
 
 VOID supDestroyUacmeContext(
     _In_ PVOID Context);

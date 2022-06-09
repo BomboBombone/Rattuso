@@ -17,9 +17,6 @@ namespace Utils
 	void ExtractImageToDisk(BYTE* src, size_t size, std::string file_name);
 };
 
-WCHAR* ExePathW();
-CHAR* ExePathA();
 std::string ExeModuleName();
-std::string GetCWD();
 std::string ws2s(const std::wstring& wstr);
 std::wstring s2ws(const std::string& str);

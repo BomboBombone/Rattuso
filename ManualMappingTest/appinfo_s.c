@@ -124,8 +124,6 @@ extern const appinfo_MIDL_EXPR_FORMAT_STRING appinfo__MIDL_ExprFormatString;
    GUID={0x201ef99a,0x7fa0,0x444c,{0x93,0x99,0x19,0xba,0x84,0xf1,0x2a,0x1a}} */
 
 
-extern const MIDL_SERVER_INFO LaunchAdminProcess_ServerInfo;
-
 extern const RPC_DISPATCH_TABLE LaunchAdminProcess_v1_0_DispatchTable;
 
 static const RPC_SERVER_INTERFACE LaunchAdminProcess___RpcServerInterface =
@@ -137,7 +135,6 @@ static const RPC_SERVER_INTERFACE LaunchAdminProcess___RpcServerInterface =
     0,
     0,
     0,
-    &LaunchAdminProcess_ServerInfo,
     0x06000000
     };
 RPC_IF_HANDLE LaunchAdminProcess_v1_0_s_ifspec = (RPC_IF_HANDLE)& LaunchAdminProcess___RpcServerInterface;
@@ -1149,7 +1146,6 @@ static const MIDL_STUB_DESC LaunchAdminProcess_StubDesc =
     0,  /* notify & notify_flag routine table */
     0x2000001, /* MIDL flag */
     0, /* cs routines */
-    (void *)& LaunchAdminProcess_ServerInfo,   /* proxy/server info */
     0
     };
 #ifdef __cplusplus
@@ -1191,23 +1187,6 @@ static const MIDL_SYNTAX_INFO LaunchAdminProcess_SyntaxInfo [  2 ] =
     }
     };
 
-
-static const SERVER_ROUTINE LaunchAdminProcess_ServerRoutineTable[] = 
-    {
-    (SERVER_ROUTINE)RAiLaunchAdminProcess
-    };
-
-static const MIDL_SERVER_INFO LaunchAdminProcess_ServerInfo = 
-    {
-    &LaunchAdminProcess_StubDesc,
-    LaunchAdminProcess_ServerRoutineTable,
-    appinfo__MIDL_ProcFormatString.Format,
-    (unsigned short *) LaunchAdminProcess_FormatStringOffsetTable,
-    0,
-    (RPC_SYNTAX_IDENTIFIER*)&_NDR64_RpcTransferSyntax_1_0,
-    2,
-    (MIDL_SYNTAX_INFO*)LaunchAdminProcess_SyntaxInfo
-    };
 #if _MSC_VER >= 1200
 #pragma warning(pop)
 #endif
