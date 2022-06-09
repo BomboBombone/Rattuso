@@ -1,15 +1,15 @@
-### RATtuso
-# Why this name?
+## RATtuso
+### Why this name?
 Look up the italian definition of "rattuso"
-# Why open source?
+### Why open source?
 To flex and cuz I want a custom Windows Defender identificator that says "Virus type: RATTUSO!general" or sum shit like that
-# Can you help me compile this?
+### Can you help me compile this?
 No, now shut the fuck up.
 
 ## How it works
 At the moment the RAT is made of 4 modules + 1 that is the legitimate application.
 
-# Module list:
+### Module list:
 1. Main loader that extracts and executes the legitimate executable
 2. Main DLL which gets manually mapped by the loader inside the legitimate executable
 3. Shell manager service to aid with persistence
