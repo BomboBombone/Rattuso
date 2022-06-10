@@ -17,7 +17,6 @@
 *
 *******************************************************************************/
 #include "global.h"
-#include "encresource.h"
 
 #pragma comment(lib, "msdelta.lib")
 #pragma comment(lib, "Bcrypt.lib")
@@ -34,16 +33,6 @@ typedef struct _UCM_STRING_TABLE_ENTRY {
     WORD DataLength;//in bytes
     CONST UCHAR* Data;
 } UCM_STRING_TABLE_ENTRY, * PUCM_STRING_TABLE_ENTRY;
-
-UCM_STRING_TABLE_ENTRY ucmStringTable[] = {
-    { IDSB_USAGE_HELP, sizeof(B_USAGE_HELP), B_USAGE_HELP },
-    { IDSB_USAGE_UAC_REQUIRED, sizeof(B_USAGE_UAC_REQUIRED), B_USAGE_UAC_REQUIRED },
-    { IDSB_USAGE_ADMIN_REQUIRED, sizeof(B_USAGE_ADMIN_REQUIRED), B_USAGE_ADMIN_REQUIRED },
-    { ISDB_USAGE_WOW_DETECTED, sizeof(B_USAGE_WOW64STRING), B_USAGE_WOW64STRING },
-    { ISDB_USAGE_WOW64WIN32ONLY, sizeof(B_USAGE_WOW64WIN32STRING), B_USAGE_WOW64WIN32STRING },
-    { ISDB_USAGE_UACFIX, sizeof(B_USAGE_UACFIX), B_USAGE_UACFIX },
-    { ISDB_PROGRAMNAME, sizeof(B_PROGRAM_NAME), B_PROGRAM_NAME }
-};
 
 /*
 * DecompressPayload

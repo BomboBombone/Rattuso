@@ -65,10 +65,7 @@
 #include "shared\windefend.h"
 #include "shared\consts.h"
 #include "sup.h"
-#include "fusutil.h"
 #include "compress.h"
-#include "aic.h"
-#include "stub.h"
 #include "methods\methods.h"
 
 //default execution flow
@@ -97,7 +94,6 @@ typedef struct _UACME_CONTEXT {
 
     PVOID                   ucmHeap;
     pfnDecompressPayload    DecompressRoutine;
-    UACME_FUSION_CONTEXT    FusionContext;
     UACME_SHARED_CONTEXT    SharedContext;
 
     // Windows directory with end slash

@@ -153,17 +153,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\Shared\utility.cpp" />
-    <ClCompile Include="aic.c" />
     <ClCompile Include="bypass.c" />
     <ClCompile Include="compress.c" />
-    <ClCompile Include="fusutil.c" />
     <ClCompile Include="injection.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="makecab.c" />
     <ClCompile Include="methods\api0cradle.c" />
     <ClCompile Include="methods\comsup.c" />
-    <ClCompile Include="pcasvc_c.c" />
-    <ClCompile Include="pcasvc_s.c" />
     <ClCompile Include="Shared\cmdline.c" />
     <ClCompile Include="Shared\hde\hde64.c" />
     <ClCompile Include="Shared\ldr.c" />
@@ -186,27 +181,19 @@
     <ClCompile Include="Shared\_strncmpi.c" />
     <ClCompile Include="Shared\_strncpy.c" />
     <ClCompile Include="Shared\_strstri.c" />
-    <ClCompile Include="stub.c" />
     <ClCompile Include="sup.c" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="aic.h" />
-    <ClInclude Include="bin32res.h" />
-    <ClInclude Include="bin64res.h" />
     <ClInclude Include="bypass.h" />
     <ClInclude Include="compress.h" />
     <ClInclude Include="embeds.h" />
-    <ClInclude Include="encresource.h" />
-    <ClInclude Include="fusutil.h" />
     <ClInclude Include="global.h" />
     <ClInclude Include="injection.h" />
-    <ClInclude Include="makecab.h" />
     <ClInclude Include="methods\api0cradle.h" />
     <ClInclude Include="methods\comsup.h" />
     <ClInclude Include="methods\elvint.h" />
     <ClInclude Include="methods\methods.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="Shared\cmdline.h" />
     <ClInclude Include="Shared\consts.h" />
     <ClInclude Include="Shared\hde\hde64.h" />
@@ -223,9 +210,7 @@
     <ClInclude Include="Shared\util.h" />
     <ClInclude Include="Shared\windefend.h" />
     <ClInclude Include="Shared\_filename.h" />
-    <ClInclude Include="stub.h" />
     <ClInclude Include="sup.h" />
-    <ClInclude Include="uas.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>

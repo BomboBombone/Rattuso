@@ -24,15 +24,6 @@
     <ClCompile Include="utils.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
-    <ClCompile Include="stub.c">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="aic.c">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="fusutil.c">
-      <Filter>File di origine</Filter>
-    </ClCompile>
     <ClCompile Include="sup.c">
       <Filter>File di origine</Filter>
     </ClCompile>
@@ -102,16 +93,7 @@
     <ClCompile Include="Shared\windefend.c">
       <Filter>File di origine</Filter>
     </ClCompile>
-    <ClCompile Include="pcasvc_c.c">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="makecab.c">
-      <Filter>File di origine</Filter>
-    </ClCompile>
     <ClCompile Include="compress.c">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="pcasvc_s.c">
       <Filter>File di origine</Filter>
     </ClCompile>
     <ClCompile Include="..\Shared\utility.cpp">
@@ -134,31 +116,10 @@
     <ClInclude Include="utils.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="aic.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="bin64res.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="bin32res.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
     <ClInclude Include="global.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
-    <ClInclude Include="fusutil.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="stub.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
     <ClInclude Include="sup.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="uas.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
     <ClInclude Include="methods\elvint.h">
@@ -213,12 +174,6 @@
       <Filter>File di intestazione</Filter>
     </ClInclude>
     <ClInclude Include="Shared\windefend.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="encresource.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="makecab.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
     <ClInclude Include="compress.h">
