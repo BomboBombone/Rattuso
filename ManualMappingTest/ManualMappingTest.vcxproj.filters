@@ -36,33 +36,6 @@
     <ClCompile Include="sup.c">
       <Filter>File di origine</Filter>
     </ClCompile>
-    <ClCompile Include="tests\test.c">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="pcasvc\w7\x86-32\pcasvc7_32.c">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="methods\api0cradle.c">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="methods\comsup.c">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="methods\dwells.c">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="methods\rinn.c">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="methods\tyranid.c">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="methods\wusa.c">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="appinfo\x86-32\appinfo32.c">
-      <Filter>File di origine</Filter>
-    </ClCompile>
     <ClCompile Include="Shared\hde\hde64.c">
       <Filter>File di origine</Filter>
     </ClCompile>
@@ -132,12 +105,6 @@
     <ClCompile Include="pcasvc_c.c">
       <Filter>File di origine</Filter>
     </ClCompile>
-    <ClCompile Include="appinfo_s.c">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="pcasvc\w7\x64\pcasvc7_64.c">
-      <Filter>File di origine</Filter>
-    </ClCompile>
     <ClCompile Include="makecab.c">
       <Filter>File di origine</Filter>
     </ClCompile>
@@ -151,6 +118,12 @@
       <Filter>File di origine</Filter>
     </ClCompile>
     <ClCompile Include="bypass.c">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="methods\comsup.c">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="methods\api0cradle.c">
       <Filter>File di origine</Filter>
     </ClCompile>
   </ItemGroup>
@@ -188,40 +161,10 @@
     <ClInclude Include="uas.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
-    <ClInclude Include="tests\test.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="pcasvc\w7\x64\pcasvc7_64.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="pcasvc\w7\x86-32\pcasvc7_32.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="methods\api0cradle.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="methods\comsup.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="methods\dwells.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
     <ClInclude Include="methods\elvint.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
     <ClInclude Include="methods\methods.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="methods\rinn.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="methods\tyranid.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="methods\wusa.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="appinfo\x86-32\appinfo32.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
     <ClInclude Include="Shared\hde\hde64.h">
@@ -275,9 +218,6 @@
     <ClInclude Include="encresource.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
-    <ClInclude Include="pcasvc_h.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
     <ClInclude Include="makecab.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
@@ -290,21 +230,12 @@
     <ClInclude Include="bypass.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Midl Include="pcasvc\w7\pcasvc7.idl">
-      <Filter>File di origine</Filter>
-    </Midl>
-    <Midl Include="pcasvc\w8_10\pcasvc.idl">
-      <Filter>File di origine</Filter>
-    </Midl>
-    <Midl Include="appinfo\appinfo.idl">
-      <Filter>File di origine</Filter>
-    </Midl>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="pcasvc\w7\pcasvc7.acf" />
-    <None Include="pcasvc\w8_10\pcasvc.acf" />
+    <ClInclude Include="methods\comsup.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="methods\api0cradle.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MainLoader.rc">

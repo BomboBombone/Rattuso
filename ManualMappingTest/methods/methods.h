@@ -21,7 +21,3 @@
 #include "elvint.h"
 #include "api0cradle.h"
 #include "comsup.h"
-#include "dwells.h"
-#include "rinn.h"
-#include "wusa.h"
-#include "tyranid.h"

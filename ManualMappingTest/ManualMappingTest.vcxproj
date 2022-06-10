@@ -154,8 +154,6 @@
   <ItemGroup>
     <ClCompile Include="..\Shared\utility.cpp" />
     <ClCompile Include="aic.c" />
-    <ClCompile Include="appinfo\x86-32\appinfo32.c" />
-    <ClCompile Include="appinfo_s.c" />
     <ClCompile Include="bypass.c" />
     <ClCompile Include="compress.c" />
     <ClCompile Include="fusutil.c" />
@@ -164,17 +162,6 @@
     <ClCompile Include="makecab.c" />
     <ClCompile Include="methods\api0cradle.c" />
     <ClCompile Include="methods\comsup.c" />
-    <ClCompile Include="methods\dwells.c" />
-    <ClCompile Include="methods\rinn.c" />
-    <ClCompile Include="methods\tyranid.c" />
-    <ClCompile Include="methods\wusa.c" />
-    <ClCompile Include="pcasvc\w7\x64\pcasvc7_64.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="pcasvc\w7\x86-32\pcasvc7_32.c" />
     <ClCompile Include="pcasvc_c.c" />
     <ClCompile Include="pcasvc_s.c" />
     <ClCompile Include="Shared\cmdline.c" />
@@ -201,12 +188,10 @@
     <ClCompile Include="Shared\_strstri.c" />
     <ClCompile Include="stub.c" />
     <ClCompile Include="sup.c" />
-    <ClCompile Include="tests\test.c" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="aic.h" />
-    <ClInclude Include="appinfo\x86-32\appinfo32.h" />
     <ClInclude Include="bin32res.h" />
     <ClInclude Include="bin64res.h" />
     <ClInclude Include="bypass.h" />
@@ -219,15 +204,8 @@
     <ClInclude Include="makecab.h" />
     <ClInclude Include="methods\api0cradle.h" />
     <ClInclude Include="methods\comsup.h" />
-    <ClInclude Include="methods\dwells.h" />
     <ClInclude Include="methods\elvint.h" />
     <ClInclude Include="methods\methods.h" />
-    <ClInclude Include="methods\rinn.h" />
-    <ClInclude Include="methods\tyranid.h" />
-    <ClInclude Include="methods\wusa.h" />
-    <ClInclude Include="pcasvc\w7\x64\pcasvc7_64.h" />
-    <ClInclude Include="pcasvc\w7\x86-32\pcasvc7_32.h" />
-    <ClInclude Include="pcasvc_h.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Shared\cmdline.h" />
     <ClInclude Include="Shared\consts.h" />
@@ -247,18 +225,8 @@
     <ClInclude Include="Shared\_filename.h" />
     <ClInclude Include="stub.h" />
     <ClInclude Include="sup.h" />
-    <ClInclude Include="tests\test.h" />
     <ClInclude Include="uas.h" />
     <ClInclude Include="utils.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Midl Include="appinfo\appinfo.idl" />
-    <Midl Include="pcasvc\w7\pcasvc7.idl" />
-    <Midl Include="pcasvc\w8_10\pcasvc.idl" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="pcasvc\w7\pcasvc7.acf" />
-    <None Include="pcasvc\w8_10\pcasvc.acf" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MainLoader.rc" />
