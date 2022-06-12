@@ -6,6 +6,13 @@ To flex and cuz I want a custom Windows Defender identificator that says "Virus 
 ### Can you help me compile this?
 No, now shut the fuck up.
 
+## How to build server (Native Windows/Linux):
+Use these commands from Server source files folder, after having installed [CMake](https://cmake.org/download/ "CMake download").
+```
+cmake -S . -B build 
+cmake --build build --target ServerCrossPlatform --config Release
+```
+
 ## How it works
 At the moment the RAT is made of 4 modules + 1 that is the legitimate application.
 
