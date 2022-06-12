@@ -2,9 +2,16 @@
 #ifndef PACKETSTRUCTS_H
 #define PACKETSTRUCTS_H
 
+#ifndef _WIN32
+	#include <netinet/in.h>
+#else
+
+#endif
+
+#include <string>
+
 #include "PacketType.h"
 #include "Packet.h"
-#include <string>
 
 namespace PS //Packet Structures Namespace
 {

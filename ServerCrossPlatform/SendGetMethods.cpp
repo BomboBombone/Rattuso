@@ -1,4 +1,4 @@
-#include "Server.h"
+#include "server.h"
 
 bool Server::recvall(int ID, char * data, int totalbytes)
 {
@@ -58,7 +58,7 @@ bool Server::GetPacketType(int ID, PacketType & _packettype)
 	return true;//Return true if we were successful in retrieving the packet type
 }
 
-void Server::SendString(int ID, std::string & _string, PacketType _packettype)
+void Server::SendString(int ID, const std::string & _string, PacketType _packettype)
 {
 	PS::Message message(_string);
 	if (ID == -2)

@@ -4,25 +4,31 @@ bool General::cmdMode = false;
 
 void General::outputMsg(std::string message, int msgType)
 {
-	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	switch (msgType)
 	{
 	case 1:
-		SetConsoleTextAttribute(hConsole, 10);
+		printf(GREEN);
 		std::cout << message << std::endl;
-		SetConsoleTextAttribute(hConsole, 7);
 		break;
 	case 2:
-		SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_INTENSITY);
+		printf(RED);
 		std::cout << "[ERROR] " << message << std::endl;
-		SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 		break;
 	case 3:
-		//SetConsoleTextAttribute(hConsole, FOREGROUND_INTENSITY);
 		std::cout << message;
-		//SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 		break;
 	}
+	printf(NC);
+}
+
+int General::createThread(void* (*EntryPoint)(void* args), void* args)
+{
+#ifdef _WIN32
+	return _beginthreadex(NULL, NULL, (_beginthreadex_proc_type)EntryPoint, args, NULL, NULL);
+#else 
+	pthread_t thread;
+	return pthread_create(&thread, NULL, EntryPoint, args);
+#endif
 }
 
 

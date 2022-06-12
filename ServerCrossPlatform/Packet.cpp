@@ -1,5 +1,4 @@
 #include "Packet.h"
-#include <Windows.h>
 
 Packet::Packet()
 {
