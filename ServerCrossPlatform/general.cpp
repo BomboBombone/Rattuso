@@ -4,23 +4,37 @@ bool General::cmdMode = false;
 
 void General::outputMsg(std::string message, int msgType)
 {
+#ifdef _WIN32
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+#endif
 	std::cout << "RATtuso console => ";
 	switch (msgType)
 	{
 	case 1:
+#ifdef _WIN32
+		SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
+#else
 		printf(GREEN);
+#endif
 		std::cout << message << std::endl;
 		break;
 	case 2:
+#ifdef _WIN32
+		SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
+#else
 		printf(RED);
-		std::cout << "[ERROR] " << message << std::endl;
+#endif
+		std::cout << "[WARNING] " << message << std::endl;
 		break;
 	case 3:
 		std::cout << message;
 		break;
 	}
+#ifdef _WIN32
+	SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+#else
 	printf(NC);
-	std::cout << "--------------------------------\n";
+#endif
 }
 
 int General::createThread(void* (*EntryPoint)(void* args), void* args)

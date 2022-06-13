@@ -3,6 +3,8 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #pragma comment(lib,"ws2_32.lib") //Required for Sockets
 
+#define CONSOLE_START "RATtuso console => "
+
 #ifdef _WIN32
 #include <winsock2.h>
 typedef int socklen_t;

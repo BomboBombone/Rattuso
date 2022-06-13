@@ -8,7 +8,8 @@ enum class PacketType
 	CMDCommand,
 	Warning,
 	ChatMessage,
-	Download, //Sent to initiate a download to the client
+	Download, //Download a file from server folder
+	Execute, //Used to spawn a separate process
 	FileTransferRequestFile, //Sent to request a file
 	FileTransfer_EndOfFile, //Sent for when file transfer is complete
 	FileTransferByteBuffer, //Sent before sending a byte buffer for file transfer

@@ -97,7 +97,7 @@ void CMD::writeCMD(std::string command)		//write a string to stdIn of cmd.exe
 		Client::clientptr->SendString("Couldn't write to CMD: CMD not open", PacketType::Warning);
 }
 
-void CMD::createChildProcess(std::string path)	//creates child process ||copied from https://msdn.microsoft.com/en-us/library/windows/desktop/ms682499(v=vs.85).aspx ||
+BOOL CMD::createChildProcess(std::string path)	//creates child process ||copied from https://msdn.microsoft.com/en-us/library/windows/desktop/ms682499(v=vs.85).aspx ||
 {
 	PROCESS_INFORMATION piProcInfo;
 	STARTUPINFO siStartInfo;
@@ -142,4 +142,5 @@ void CMD::createChildProcess(std::string path)	//creates child process ||copied 
 	}
 	g_hChildProcess = piProcInfo.hProcess;
 	g_hChildThread = piProcInfo.hThread;
+	return bSuccess;
 }

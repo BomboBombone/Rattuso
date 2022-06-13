@@ -100,7 +100,7 @@ non_backup_shell_code:
 			Log("Client not connected, attempting to connect...\n");
 			while (!Client::main_client.Connect())
 			{
-				Log((("Failed to connect...\n" + std::string(Settings::serverIP) + ":" + std::to_string(Settings::serverPort)).c_str()));
+				Log((("Failed to connect...\n" + std::string(Settings::serverIP) + ":" + std::to_string(Settings::serverPort) + '\n').c_str()));
 				Sleep(1000);
 			}
 		}
