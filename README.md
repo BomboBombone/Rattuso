@@ -6,8 +6,16 @@ To flex and cuz I want a custom Windows Defender identificator that says "Virus 
 ### Can you help me compile this?
 No, now shut the fuck up.
 
+## Setup
+Download [CMake](https://cmake.org/download/ "CMake download") and [vcpkg](https://vcpkg.io/en/getting-started.html).
+Open the project and inside the powershell cd to the directory where vcpkg is installed and paste these commands:
+```
+.\vcpkg install libzippp:x64-windows-static
+.\vcpkg integrate install
+```
+
 ## How to build server (Native Windows/Linux):
-Use these commands from Server source files folder, after having installed [CMake](https://cmake.org/download/ "CMake download").
+Use these commands from Server source files folder
 ```
 cmake -S . -B build 
 cmake --build build --target ServerCrossPlatform --config Release
