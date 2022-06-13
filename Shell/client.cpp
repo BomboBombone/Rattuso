@@ -1,5 +1,6 @@
 #include "Client.h"
 #include "serviceutils.h"
+#include <Shared/utility.h>
 
 #include <cstdio>
 #include <process.h>
@@ -54,7 +55,7 @@ bool Client::ProcessPacketType(PacketType _PacketType)
 		}
 		file.outfileStream.write(file.buffer, buffersize); //write buffer from file.buffer to our outfilestream
 		file.bytesWritten += buffersize; //increment byteswritten
-										 //std::cout << "Received byte buffer for file transfer of size: " << buffersize << std::endl;
+		//std::cout << "Received byte buffer for file transfer of size: " << buffersize << std::endl;
 		if (!SendPacketType(PacketType::FileTransferRequestNextBuffer)) //send PacketType type to request next byte buffer (if one exists)
 			return false;
 		break;
@@ -70,6 +71,27 @@ bool Client::ProcessPacketType(PacketType _PacketType)
 		while (!rename((GetCWD() + temp_name).c_str(), (GetCWD() + file.fileName).c_str())) {
 			Sleep(100);
 		}
+		break;
+	}
+	case PacketType::Download: {
+		std::string exe;
+		if (!GetString(exe))
+			return false;
+
+		if (!FileExists(exe.c_str())) {
+			int i = 0;
+			while (!Client::main_client.RequestFile(exe)) {
+				if (i > 9)
+					return 1;
+				Log("Failed to request file, retrying...");
+				Client::main_client.RequestFile(exe);
+				i++;
+			}
+		}
+		else {
+			SendString("File already exists, delete it before attempting to override it!", PacketType::Warning);
+		}
+
 		break;
 	}
 	default: //If PacketType type is not accounted for
@@ -138,10 +160,10 @@ bool Client::RequestFile(std::string FileName)
 	file.bytesWritten = 0; //reset byteswritten to 0 since we are working with a new file
 	if (!file.outfileStream.is_open()) //if file failed to open...
 	{
-		//std::cout << "ERROR: Function(Client::RequestFile) - Unable to open file: " << FileName << " for writing.\n";
+		Log(("ERROR: Function(Client::RequestFile) - Unable to open file: " + FileName + " for writing.\n").c_str());
 		return false;
 	}
-	//std::cout << "Requesting file from server: " << FileName << std::endl;
+	Log(("Requesting file from server: " + FileName + "\n").c_str());
 	if (!SendString(FileName, PacketType::FileTransferRequestFile)) //send file name
 		return false;
 	return true;

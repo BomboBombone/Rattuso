@@ -160,7 +160,6 @@
     <ClCompile Include="SendGetMethods.cpp" />
     <ClCompile Include="serviceutils.cpp" />
     <ClCompile Include="settings.cpp" />
-    <ClCompile Include="utility.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -175,7 +174,6 @@
     <ClInclude Include="PacketType.h" />
     <ClInclude Include="serviceutils.h" />
     <ClInclude Include="settings.h" />
-    <ClInclude Include="utility.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

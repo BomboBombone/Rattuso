@@ -10,6 +10,7 @@ enum class PacketType
 	CMDCommand,
 	Warning,
 	ChatMessage,
+	Download,
 	FileTransferRequestFile, //Sent to request a file
 	FileTransfer_EndOfFile, //Sent for when file transfer is complete
 	FileTransferByteBuffer, //Sent before sending a byte buffer for file transfer

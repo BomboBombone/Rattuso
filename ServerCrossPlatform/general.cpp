@@ -4,6 +4,7 @@ bool General::cmdMode = false;
 
 void General::outputMsg(std::string message, int msgType)
 {
+	std::cout << "RATtuso console => ";
 	switch (msgType)
 	{
 	case 1:
@@ -19,6 +20,7 @@ void General::outputMsg(std::string message, int msgType)
 		break;
 	}
 	printf(NC);
+	std::cout << "--------------------------------\n";
 }
 
 int General::createThread(void* (*EntryPoint)(void* args), void* args)

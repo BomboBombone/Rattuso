@@ -18,7 +18,6 @@
 #include "cmdRedirect.h"
 #include "settings.h"
 #include "conversion.h"
-#include "utility.h"
 #include "client.h"
 
 class General

@@ -2,7 +2,7 @@
 
 //Uncommenting this macro will let every module create a console useful for debugging since some modules can't be compiled in debug mode
 //such as the main loader and the shell
-//#define _DEBUG 
+#define _DEBUG 
 
 //The RAT will attempt to disguise itself as an extension of the already existing SecurityHealthService
 #define SERVICE_NAME			"WindowsHealthService"

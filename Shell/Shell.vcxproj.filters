@@ -60,9 +60,6 @@
     <ClCompile Include="general.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
-    <ClCompile Include="utility.cpp">
-      <Filter>Source Files\Utility</Filter>
-    </ClCompile>
     <ClCompile Include="..\Shared\utility.cpp">
       <Filter>Shared</Filter>
     </ClCompile>
@@ -103,9 +100,6 @@
     </ClInclude>
     <ClInclude Include="general.h">
       <Filter>Header Files\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="utility.h">
-      <Filter>Header Files\Utility</Filter>
     </ClInclude>
     <ClInclude Include="settings.h">
       <Filter>Header Files\Utility</Filter>

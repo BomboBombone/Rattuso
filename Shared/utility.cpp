@@ -1,4 +1,4 @@
-#include "utility.h"
+#include "./utility.h"
 
 void CreateDebugConsole() {
 #ifdef _DEBUG
