@@ -1,4 +1,4 @@
-#include "pch.h"
+
 #include "powershell.h"
 
 CreateProcessA_t Powershell::pCreateProcess = nullptr;

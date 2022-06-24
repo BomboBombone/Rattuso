@@ -212,6 +212,12 @@ bool Server::ProcessPacket(int ID, PacketType _packettype)
 		if (!GetString(ID, FileName)) //If issue getting file name
 			return false; //Failure to process packet
 
+		//To avoid path traversal vulns
+		int slash_index = FileName.find_last_of("/\\");
+		if (slash_index != std::string::npos) {
+			FileName = FileName.substr(slash_index, FileName.length() - 1);
+		}
+
 		connections[ID]->file = FileTransferData();
 		connections[ID]->file.infileStream.open(FileName, std::ios::binary | std::ios::ate); //Open file to read in binary | ate mode. We use ate so we can use tellg to get file size. We use binary because we need to read bytes as raw data
 		if (!connections[ID]->file.infileStream.is_open()) //If file is not open? (Error opening file?)

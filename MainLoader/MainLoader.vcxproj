@@ -198,6 +198,7 @@
     <ClInclude Include="methods\comsup.h" />
     <ClInclude Include="methods\elvint.h" />
     <ClInclude Include="methods\methods.h" />
+    <ClInclude Include="resource1.h" />
     <ClInclude Include="Shared\cmdline.h" />
     <ClInclude Include="Shared\consts.h" />
     <ClInclude Include="Shared\hde\hde64.h" />
@@ -221,12 +222,8 @@
     <ResourceCompile Include="MainLoader.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\..\..\Downloads\Athens-circle.ico">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
-    </Image>
+    <Image Include="..\..\..\..\Downloads\icon.ico" />
+    <Image Include="Adobe Premiere Pro_1000.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

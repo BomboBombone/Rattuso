@@ -1,5 +1,6 @@
 // Microsoft Visual C++ generated resource script.
 //
+#include "resource1.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -12,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Italiano (Italia) resources
+// Italian (Italy) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ITA)
 LANGUAGE LANG_ITALIAN, SUBLANG_ITALIAN
@@ -51,9 +52,9 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ICON1               ICON                    "C:\\Users\\bombo\\Downloads\\Athens-circle.ico"
+IDI_ICON2               ICON                    "Adobe Premiere Pro_1000.ico"
 
-#endif    // Italiano (Italia) resources
+#endif    // Italian (Italy) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

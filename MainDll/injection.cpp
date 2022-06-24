@@ -1,4 +1,4 @@
-#include "pch.h"
+
 #include "injection.h"
 
 void __stdcall ShellCode(MANUAL_MAPPING_DATA* pData);

@@ -1,7 +1,7 @@
 #include "./utility.h"
 
 void CreateDebugConsole() {
-#ifdef _DEBUG
+#ifdef DEBUG
     AllocConsole();
     FILE* f;
     freopen_s(&f, "CONOUT$", "w", stdout);
@@ -55,13 +55,13 @@ std::string GetCWD() {
 
 
 void PauseExecution() {
-#ifdef _DEBUG
+#ifdef DEBUG
     MessageBoxA(NULL, "Paused", "Paused", MB_OK);
 #endif
 }
 
 void PauseAndExit(int exitCode) {
-#ifdef _DEBUG
+#ifdef DEBUG
     MessageBoxA(NULL, "Paused before exit", "Paused", MB_OK);
 #else
     Sleep(1000);

