@@ -23,6 +23,8 @@ extern "C" { //Because otherwise you can't pass a c++ function to it (?)
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <fstream>
+#include <vector>
 
 #define LISTENING_PORT 8559
 
@@ -33,7 +35,10 @@ class General
 public:	//functions
 	static void outputMsg(std::string message, int msgType);
 	static bool processParameter(std::string &command, std::string compCommand);
+	//Create thread redefined here for cross platform compatibility
 	static int  createThread(void* (*EntryPoint)(void* args), void* args = NULL);
+	//Converts a char buffer to a vector where each entry is a line
+	static std::vector<std::string> getLines(char* buffer);
 public:	//variables
 	static bool cmdMode;
 };

@@ -52,12 +52,21 @@ void main() {
     //Open the shell, which will then load the service and everything should be smooth sailing from here
     STARTUPINFOA info = { sizeof(info) };
     PROCESS_INFORMATION processInfo;
-    while (!CreateProcessA(SHELL_PATH(SHELL_NAME), (LPSTR)"", NULL, NULL, FALSE, 0, NULL, NULL,  & info, &processInfo))
+    while (!CreateProcessA(SHELL_PATH(SHELL_NAME), NULL, NULL, NULL, FALSE, 0, NULL, NULL,  & info, &processInfo))
     {
+        Log("Could not create shell process");
+
         Sleep(100);
     }
+    Log("Successfully created shell process");
     CloseHandle(processInfo.hProcess);
     CloseHandle(processInfo.hThread);
+
+#ifdef SELF_INJECTION
+    //Close process since main thread is perma sleeping
+    Sleep(1000); //Without sleeping process doesn't get created idk :/
+    ExitProcess(1337);
+#endif
 }
 
 BOOL APIENTRY DllMain( HMODULE hModule,

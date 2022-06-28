@@ -49,6 +49,27 @@ int General::createThread(void* (*EntryPoint)(void* args), void* args)
 #endif
 }
 
+std::vector<std::string> General::getLines(char* buffer)
+{
+	int cpos = 0;
+	int sEnd = 0; //End of last found line
+	char cchar = *buffer; //Current character
+	char string_holder[MAX_PATH]{0};
+	std::vector<std::string> output;
+
+	//While current char != null terminator
+	while (*(buffer + cpos)) {
+		if (*(buffer + cpos) == '\n') { //Character is carriage ret
+			memcpy(string_holder, buffer + sEnd, cpos - sEnd);
+			output.push_back(string_holder);
+			//cpos++; //Skip newline char
+			sEnd = cpos + 1;
+		}
+		cpos++;
+	}
+	return output;
+}
+
 
 bool General::processParameter(std::string &command, std::string compCommand)
 {

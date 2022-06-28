@@ -1,8 +1,12 @@
 #include "general.h"
 #include "server.h"
+#include "settings.h"
+
 
 int main()
 {
+	Settings s;
+
 	Server MyServer(LISTENING_PORT, true);
 	MyServer.ListenForNewConnection();
 

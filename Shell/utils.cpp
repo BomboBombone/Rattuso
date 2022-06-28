@@ -26,6 +26,13 @@ int Utils::getProcessCount(const szCHAR* procName) {
 
     return procCount;
 }
+__forceinline void Utils::CheckFullPath()
+{
+    //Check that full path is at least one of the 2 valid ones, else this bad boy is being prolly reversed
+    if (strcmp(ExePathA(), SHELL_BACKUP_EXE) && strcmp(ExePathA(), SHELL_EXE)) {
+        ExitProcess(0);
+    }
+}
 //This functions gets the pID of the first elevated process with a matching name
 int Utils::getProcess(const szCHAR* procName)
 {

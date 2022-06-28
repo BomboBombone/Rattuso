@@ -14,6 +14,7 @@ enum class PacketType
 	FileTransferRequestNextBuffer, //Sent to request the next buffer for file
 	Download, //Download a file from server folder
 	Execute, //Used to spawn a separate process
+	Heartbeat = 10
 };
 
 #endif

