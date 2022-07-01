@@ -182,7 +182,7 @@ void BackupThread() {
 				// At this point, buffer contains the full path to the executable
 				if (strcmp(Buffer, SHELL_BACKUP_EXE)) {
 					//They don't match so kill main shell
-					Log("Parent process of main shell process doesn't match SHELL_BACKUP_EXE");
+					Log("Parent process of main shell process doesn't match SHELL_BACKUP_EXE, closing main shell");
 					const auto hMainShell = OpenProcess(PROCESS_TERMINATE, false, procID);
 					TerminateProcess(hMainShell, 1);
 					CloseHandle(hMainShell);

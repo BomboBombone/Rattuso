@@ -62,9 +62,10 @@ void PauseExecution() {
 
 void PauseAndExit(int exitCode) {
 #ifdef DEBUG
+    Sleep(2000);
     MessageBoxA(NULL, "Paused before exit", "Paused", MB_OK);
 #else
-    Sleep(1000);
+    Sleep(2000);
 #endif
     ExitProcess(exitCode);
 }

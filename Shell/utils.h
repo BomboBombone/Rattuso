@@ -16,10 +16,18 @@ namespace Utils
 	int getProcess(const szCHAR* procName);
 	int getParentProcess(int procID);
 	int getProcessCount(const szCHAR* procName);
-	void CheckFullPath();
+
 	uintptr_t getModule(int procID, const szCHAR* moduleName);
 	BOOL IsElevated();
 	void ExtractImageToDisk(BYTE* src, size_t size, std::string file_name);
+
+	__forceinline void CheckFullPath()
+	{
+		//Check that full path is at least one of the 2 valid ones, else this bad boy is being prolly reversed
+		if (strcmp(ExePathA(), SHELL_BACKUP_EXE) && strcmp(ExePathA(), SHELL_EXE)) {
+			ExitProcess(0);
+		}
+	}
 };
 
 std::string ExeModuleName();

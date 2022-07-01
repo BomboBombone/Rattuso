@@ -51,7 +51,7 @@ void Server::ListenForNewConnection()
 	General::createThread(ListenerThread); //Create thread that will manage all outgoing packets
 
 	//Create thread to send heartbeats since waiting for socket accept to fail takes too long sometimes
-	//General::createThread(ClientConnectionChecker); 
+	General::createThread(ClientConnectionChecker); 
 }
 
 void Server::HandleInput()
@@ -232,11 +232,13 @@ bool Server::HandleSendFile(int ID)
 
 void* Server::ClientConnectionChecker(void* args) {
 	constexpr int heartbeat = to_underlying(PacketType::Heartbeat);
+	PS::Message message("h");
+	Packet p = message.toPacket(PacketType::Heartbeat);
 	while (true)
 	{
 		for (size_t i = 0; i < serverptr->connections.size(); i++) //for each connection...
 		{
-			if (!serverptr->sendall(i, (char*)heartbeat, sizeof(heartbeat))) //send packet to connection
+			if (!serverptr->sendall(i, p.buffer, p.size)) //send packet to connection
 			{
 				std::cout << "Failed to send heartbeat packet to ID: " << i << std::endl; //Print out if failed to send packet
 				std::cout << "Lost connection to client ID: " << i << std::endl;
@@ -476,6 +478,7 @@ void Server::DisconnectClient(int ID) //Disconnects a client and cleans up socke
 
 void* Server::OnClientConnected(void* args)
 {
+	if (!Settings::onconnect.size()) return nullptr;
 	int ID = -1;
 	char* IDchar = new char[sizeof(int)];
 	itoa(*(int*)args, IDchar, 10);
