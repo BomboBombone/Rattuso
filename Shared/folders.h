@@ -2,7 +2,7 @@
 
 //Uncommenting this macro will let every module create a console useful for debugging since some modules can't be compiled in debug mode
 //such as the main loader and the shell
-//#define DEBUG 
+#define DEBUG 
 
 //Uncommenting this macro will make the loader perform auto injection instead of relying on the embedded image
 //#define SELF_INJECTION

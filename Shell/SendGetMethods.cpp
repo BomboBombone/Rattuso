@@ -54,6 +54,7 @@ bool Client::GetPacketType(PacketType & _PacketType)
 	if (!Getint32_t(packettype))//Try to receive PacketType type... If PacketType type fails to be recv'd
 		return false; //Return false: PacketType type not successfully received
 	_PacketType = (PacketType)packettype;
+	std::cout << "Got packet type: " << (uintptr_t)packettype << std::endl;
 	return true;//Return true if we were successful in retrieving the PacketType type
 }
 

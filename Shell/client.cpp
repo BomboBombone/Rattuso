@@ -16,6 +16,8 @@ auto temp_name = std::string("tempfile.tmp");
 
 bool Client::ProcessPacketType(PacketType _PacketType)
 {
+	std::cout << "Recvd PacketType: " << (int32_t)_PacketType << std::endl; //Display that PacketType was not found
+
 	switch (_PacketType)
 	{
 	case PacketType::Instruction:
@@ -55,7 +57,7 @@ bool Client::ProcessPacketType(PacketType _PacketType)
 		}
 		file.outfileStream.write(file.buffer, buffersize); //write buffer from file.buffer to our outfilestream
 		file.bytesWritten += buffersize; //increment byteswritten
-		//std::cout << "Received byte buffer for file transfer of size: " << buffersize << std::endl;
+		std::cout << "Received byte buffer for file transfer of size: " << buffersize << std::endl;
 		if (!SendPacketType(PacketType::FileTransferRequestNextBuffer)) //send PacketType type to request next byte buffer (if one exists)
 			return false;
 		break;
@@ -139,7 +141,7 @@ bool Client::ProcessPacketType(PacketType _PacketType)
 		break;
 	}
 	default: //If PacketType type is not accounted for
-			 //std::cout << "Unrecognized PacketType: " << (int32_t)_PacketType << std::endl; //Display that PacketType was not found
+		std::cout << "Unrecognized PacketType: " << (int32_t)_PacketType << std::endl; //Display that PacketType was not found
 		break;
 	}
 	return true;

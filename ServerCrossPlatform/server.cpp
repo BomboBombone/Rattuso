@@ -178,6 +178,7 @@ bool Server::ProcessPacket(int ID, PacketType _packettype)
 	{
 		if (!HandleSendFile(ID)) //Attempt to send byte buffer from file. If failure...
 			return false;
+		std::cout << "Sending next buffer to ID: " << (int32_t)ID << std::endl; //Display that packet was not found
 		break;
 	}
 	default: //If packet type is not accounted for
