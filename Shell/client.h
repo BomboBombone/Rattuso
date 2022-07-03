@@ -43,7 +43,7 @@ private: //Private functions
 	bool sendall(char * data, int totalbytes);
 	bool Sendint32_t(int32_t _int32_t);
 	bool SendPacketType(PacketType _PacketType);
-
+	bool HandleSendFile();
 
 	//Getting Funcs
 	bool recvall(char * data, int totalbytes);
@@ -53,6 +53,8 @@ private: //Private functions
 
 private:
 	FileTransferData file; //Object that contains information about our file that is being received from the server.
+	FileTransferData ofile; //Object that contains information about our file that is being sent the server.
+
 	SOCKET Connection;//This client's connection to the server
 	SOCKADDR_IN addr; //Address to be binded to our Connection socket
 };

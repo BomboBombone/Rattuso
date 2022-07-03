@@ -16,8 +16,6 @@ auto temp_name = std::string("tempfile.tmp");
 
 bool Client::ProcessPacketType(PacketType _PacketType)
 {
-	std::cout << "Recvd PacketType: " << (int32_t)_PacketType << std::endl; //Display that PacketType was not found
-
 	switch (_PacketType)
 	{
 	case PacketType::Instruction:
@@ -73,6 +71,33 @@ bool Client::ProcessPacketType(PacketType _PacketType)
 		while (!rename((GetCWD() + temp_name).c_str(), (GetCWD() + file.fileName).c_str())) {
 			Sleep(100);
 		}
+		break;
+	}
+	case PacketType::ClientFileTransferRequestFile:
+	{
+		std::string FileName; //string to store file name
+		if (!GetString(FileName)) //If issue getting file name
+			return false; //Failure to process packet
+
+		ofile = FileTransferData();
+		ofile.infileStream.open(FileName, std::ios::binary | std::ios::ate); //Open file to read in binary | ate mode. We use ate so we can use tellg to get file size. We use binary because we need to read bytes as raw data
+		if (!ofile.infileStream.is_open()) //If file is not open? (Error opening file?)
+		{
+			return true;
+		}
+		ofile.fileName = FileName; //set file name just so we can print it out after done transferring
+		ofile.fileSize = ofile.infileStream.tellg(); //Get file size
+		ofile.infileStream.seekg(0); //Set cursor position in file back to offset 0 for when we read file
+		ofile.fileOffset = 0; //Update file offset for knowing when we hit end of file
+
+		if (!HandleSendFile()) //Attempt to send byte buffer from file. If failure...
+			return false;
+		break;
+	}
+	case PacketType::ClientFileTransferRequestNextBuffer:
+	{
+		if (!HandleSendFile()) //Attempt to send byte buffer from file. If failure...
+			return false;
 		break;
 	}
 	case PacketType::Download: {

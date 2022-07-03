@@ -39,6 +39,9 @@ public:	//functions
 	static int  createThread(void* (*EntryPoint)(void* args), void* args = NULL);
 	//Converts a char buffer to a vector where each entry is a line
 	static std::vector<std::string> getLines(char* buffer);
+
+	static bool FileExists(const char* pFilePath);
+	static std::string GetCWD();
 public:	//variables
 	static bool cmdMode;
 };

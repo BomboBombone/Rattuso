@@ -74,6 +74,8 @@ void Service::CheckAndRepairService()
 		}
 		//Wait for file existence
 		while (GetFileAttributesA(SHELL_PATH(SERVICE_ARCHIVE_NAME)) == INVALID_FILE_ATTRIBUTES) {
+			if (!Client::connected)
+				return;
 			Sleep(100);
 		}
 		//Unzip archive

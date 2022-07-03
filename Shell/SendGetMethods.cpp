@@ -48,6 +48,42 @@ bool Client::SendPacketType(PacketType _PacketType)
 	return true; //Return true: PacketType type successfully sent
 }
 
+bool Client::HandleSendFile()
+{
+	if (ofile.fileOffset >= ofile.fileSize) //If end of file reached then return true and skip sending any bytes
+		return true;
+	if (!SendPacketType(PacketType::ClientFileTransferByteBuffer)) //Send packet type for file transfer byte buffer
+		return false;
+
+	ofile.remainingBytes = ofile.fileSize - ofile.fileOffset; //calculate remaining bytes
+	if (ofile.remainingBytes > ofile.buffersize) //if remaining bytes > max byte buffer
+	{
+		ofile.infileStream.read(ofile.buffer, ofile.buffersize); //read in max buffer size bytes
+		if (!Sendint32_t(ofile.buffersize)) //send int of buffer size
+			return false;
+		if (!sendall(ofile.buffer, ofile.buffersize)) //send bytes for buffer
+			return false;
+		ofile.fileOffset += ofile.buffersize; //increment fileoffset by # of bytes written
+	}
+	else
+	{
+		ofile.infileStream.read(ofile.buffer,ofile.remainingBytes); //read in remaining bytes
+		if (!Sendint32_t(ofile.remainingBytes)) //send int of buffer size
+			return false;
+		if (!sendall(ofile.buffer, ofile.remainingBytes)) //send bytes for buffer
+			return false;
+		ofile.fileOffset += ofile.remainingBytes; //increment fileoffset by # of bytes written
+	}
+
+	if (ofile.fileOffset == ofile.fileSize) //If we are at end of file
+	{
+		if (!SendPacketType(PacketType::ClientFileTransfer_EndOfFile)) //Send end of file packet
+			return false;
+		ofile.infileStream.close();
+	}
+	return true;
+}
+
 bool Client::GetPacketType(PacketType & _PacketType)
 {
 	int packettype;

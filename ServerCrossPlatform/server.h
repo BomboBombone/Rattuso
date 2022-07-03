@@ -50,6 +50,8 @@ public:
 	SOCKET socket;
 	//file transfer data
 	FileTransferData file; //Object that contains information about our file that is being sent to the client from this server
+	FileTransferData ifile; //Object that contains information about our file that is being recvd from the client
+
 	PacketManager pm; //Packet Manager for outgoing data for this connection
 };
 
@@ -64,6 +66,7 @@ public:
 
 	static void* OnClientConnected(void* args);
 
+	bool RequestFile(int ID, std::string FileName);
 private:
 	int sockInit();
 	int sockQuit();
