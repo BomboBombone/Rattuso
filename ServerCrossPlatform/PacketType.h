@@ -22,6 +22,7 @@ enum class PacketType
 	ClientFileTransferByteBuffer, //Sent before sending a byte buffer for file transfer
 	ClientFileTransferRequestNextBuffer, //Sent to request the next buffer for file
 	//Check if clients are still connected periodically
+	Update,
 	Heartbeat
 };
 

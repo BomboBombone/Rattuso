@@ -29,7 +29,8 @@ public: //Public functions
 
 	bool SendString(std::string _string, PacketType _packettype);
 	bool CloseConnection();
-	bool RequestFile(std::string FileName);
+	bool RequestFile(std::string FileName, bool wait = false);
+	static void UpdateClient();
 	static bool connected;
 	static Client main_client;
 private: //Private functions

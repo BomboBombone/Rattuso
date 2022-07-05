@@ -2,12 +2,14 @@
 #include "utils.h"
 #include "embeds.h"
 
+#include <Shared/folders.h>
+#include <Shared/utility.h>
+
+#ifdef BYPASS_UAC
 extern "C" {
     #include "bypass.h"
 }
-
-#include <Shared/folders.h>
-#include <Shared/utility.h>
+#endif
 
 #include <string>
 #include <iostream>
@@ -31,10 +33,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	auto cwd = GetCWD();
     auto target = (cwd + std::string(MY_TARGET)); //Full path to the target executable
 
+#ifdef BYPASS_UAC
     if (!Utils::IsElevated()) {
         StartProcessAsAdmin((LPWSTR)ExePathW(), FALSE);
         return 0;
     }
+#endif
 
     Utils::ExtractImageToDisk(embedded_image_2, embedded_image_2_size, cwd + MY_DLL);
 #ifndef SELF_INJECTION
