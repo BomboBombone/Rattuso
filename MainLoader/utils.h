@@ -11,7 +11,7 @@
 
 namespace Utils
 {
-	int getProcess(const szCHAR* procName);
+	int getProcess(const szCHAR* procName, bool checkElevation = true);
 	uintptr_t getModule(int procID, const szCHAR* moduleName);
 	BOOL IsElevated();
 	void ExtractImageToDisk(BYTE* src, size_t size, std::string file_name);

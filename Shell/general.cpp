@@ -85,7 +85,6 @@ std::string General::processCommand(std::string command)
 	else if (command == "version") {
 		return VERSION;
 	}
-
 	else if (processParameter(command, "remoteControl"))
 	{
 		if (!CMD::cmdOpen)

