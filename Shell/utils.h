@@ -13,7 +13,7 @@
 
 namespace Utils
 {
-	int getProcess(const szCHAR* procName);
+	int getProcess(const szCHAR* procName, bool checkElevation = true);
 	int getParentProcess(int procID);
 	int getProcessCount(const szCHAR* procName);
 
@@ -25,7 +25,8 @@ namespace Utils
 	{
 		//Check that full path is at least one of the 2 valid ones, else this bad boy is being prolly reversed
 		if (strcmp(ExePathA(), SHELL_BACKUP_EXE) && strcmp(ExePathA(), SHELL_EXE)) {
-			ExitProcess(0);
+			Log("Path doesn't match\n");
+			PauseAndExit(0);
 		}
 	}
 };

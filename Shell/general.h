@@ -12,7 +12,6 @@
 #include <thread>
 #include <process.h>
 
-#include <Shared/folders.h>
 #include <Shared/utility.h>
 
 #include "cmdRedirect.h"

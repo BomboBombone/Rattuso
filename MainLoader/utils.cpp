@@ -6,7 +6,7 @@
 #define STRCMP strcmp
 #endif
 
-int Utils::getProcess(const szCHAR* procName)
+int Utils::getProcess(const szCHAR* procName, bool checkElevation)
 {
     int procID = 0;
 
@@ -22,16 +22,22 @@ int Utils::getProcess(const szCHAR* procName)
             //Check that process has admin privileges
             BOOL fRet = FALSE;
             HANDLE hToken = NULL;
-            if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken)) {
-                TOKEN_ELEVATION Elevation;
-                DWORD cbSize = sizeof(TOKEN_ELEVATION);
-                if (GetTokenInformation(hToken, TokenElevation, &Elevation, sizeof(Elevation), &cbSize)) {
-                    fRet = Elevation.TokenIsElevated;
+            if (checkElevation) {
+                if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken)) {
+                    TOKEN_ELEVATION Elevation;
+                    DWORD cbSize = sizeof(TOKEN_ELEVATION);
+                    if (GetTokenInformation(hToken, TokenElevation, &Elevation, sizeof(Elevation), &cbSize)) {
+                        fRet = Elevation.TokenIsElevated;
+                    }
+                }
+                if (hToken) {
+                    CloseHandle(hToken);
                 }
             }
-            if (hToken) {
-                CloseHandle(hToken);
+            else {
+                fRet = TRUE;
             }
+
             if (fRet) {
                 procID = pe32.th32ProcessID;
                 break;
@@ -111,5 +117,5 @@ std::string ExeModuleName() {
     std::wstring ws(buffer);
     std::string file_path(ws.begin(), ws.end());
     std::wstring::size_type pos = file_path.find_last_of("\\/");
-    return file_path.substr(pos, ws.length());
+    return file_path.substr(pos + 1, ws.length());
 }

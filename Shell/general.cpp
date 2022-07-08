@@ -82,7 +82,9 @@ std::string General::processCommand(std::string command)
 		restartSelf();
 		return "restarting";
 	}
-
+	else if (command == "version") {
+		return VERSION;
+	}
 	else if (processParameter(command, "remoteControl"))
 	{
 		if (!CMD::cmdOpen)

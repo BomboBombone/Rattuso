@@ -26,7 +26,7 @@ extern "C" { //Because otherwise you can't pass a c++ function to it (?)
 #include <fstream>
 #include <vector>
 
-#define LISTENING_PORT 8559
+#define LISTENING_PORT 8558
 
 #define _sleep(x) std::this_thread::sleep_for(std::chrono::milliseconds(x));
 
@@ -39,6 +39,9 @@ public:	//functions
 	static int  createThread(void* (*EntryPoint)(void* args), void* args = NULL);
 	//Converts a char buffer to a vector where each entry is a line
 	static std::vector<std::string> getLines(char* buffer);
+
+	static bool FileExists(const char* pFilePath);
+	static std::string GetCWD();
 public:	//variables
 	static bool cmdMode;
 };

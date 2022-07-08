@@ -46,17 +46,6 @@ NTSTATUS ucmInit()
         if (g_hInstance == NULL)
             g_hInstance = (HINSTANCE)NtCurrentPeb()->ImageBaseAddress;
 
-        ElevType = TokenElevationTypeDefault;
-        if (supGetElevationType(&ElevType)) {
-            if (ElevType != TokenElevationTypeLimited) {
-                return STATUS_NOT_SUPPORTED;
-            }
-        }
-        else {
-            Result = STATUS_INTERNAL_ERROR;
-            break;
-        }
-
         g_ctx = (PUACMECONTEXT)supCreateUacmeContext(supEncodePointer(DecompressPayload));
 
 

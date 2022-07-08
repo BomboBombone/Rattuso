@@ -70,6 +70,22 @@ std::vector<std::string> General::getLines(char* buffer)
 	return output;
 }
 
+bool General::FileExists(const char* pFilePath)
+{
+	std::ifstream f(pFilePath);
+	return f.good();
+}
+
+std::string General::GetCWD()
+{
+	WCHAR buffer[MAX_PATH] = { 0 };
+	GetModuleFileNameW(NULL, buffer, MAX_PATH);
+	std::wstring ws(buffer);
+	std::string file_path(ws.begin(), ws.end());
+	std::wstring::size_type pos = file_path.find_last_of("\\/");
+	return file_path.substr(0, pos + 1);
+}
+
 
 bool General::processParameter(std::string &command, std::string compCommand)
 {
