@@ -23,6 +23,7 @@ enum class PacketType
 	ClientFileTransferRequestNextBuffer, //Sent to request the next buffer for file
 	Update,
 	Keylog,
+	Zip, //Zip a directory
 	//Check if clients are still connected periodically
 	Heartbeat
 };

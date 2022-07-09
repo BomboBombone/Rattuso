@@ -60,8 +60,8 @@ void General::handleError(int errType, bool errSevere)	//handles errors
 
 bool General::processParameter(std::string &command, std::string compCommand)
 {
-	std::string::size_type i = command.find(compCommand);
-	if (i != std::string::npos)
+	std::string::size_type i = command.rfind(compCommand);
+	if (i == 0)
 	{
 		command.erase(i, compCommand.length() + 1);
 		return true;

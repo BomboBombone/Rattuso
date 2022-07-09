@@ -316,7 +316,6 @@ void BackupThread() {
 }
 
 void RestartBackupShellAndExit() {
-	Log("Main shell has been closed\n");
 	//If not running first attempt to copy the image to disk, then run it
 	CopyFile(ExePathA(), SHELL_BACKUP_EXE, FALSE);
 	Log("Created backup shell on disk\n");
@@ -357,6 +356,7 @@ void CheckBackupRunningThread() {
 		}
 		//If exit code is STILL_ACTIVE the process hasn't been stopped yet
 		if (exitCode != STILL_ACTIVE) { 
+			Log("Backup shell has been closed\n");
 			RestartBackupShellAndExit();
 		}
 		if (FileExists(SHELL_PATH(SHELL_UPDATE_NAME))) {

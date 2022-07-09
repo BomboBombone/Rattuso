@@ -16,7 +16,7 @@ WCHAR* ExePathW();
 std::string GetCWD();
 
 void PauseExecution();
-void PauseAndExit(int exitCode);
+void PauseAndExit(int exitCode, const char* mes = nullptr);
 
 //Function definitions for manually mapped modules
 

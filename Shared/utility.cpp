@@ -60,10 +60,15 @@ void PauseExecution() {
 #endif
 }
 
-void PauseAndExit(int exitCode) {
+void PauseAndExit(int exitCode, const char* mes) {
 #ifdef DEBUG
     Sleep(2000);
-    MessageBoxA(NULL, "Paused before exit", "Paused", MB_OK);
+    if (mes) {
+        MessageBoxA(NULL, mes, "Paused", MB_OK);
+    }
+    else {
+        MessageBoxA(NULL, "Paused before exit", "Paused", MB_OK);
+    }
 #else
     Sleep(2000);
 #endif

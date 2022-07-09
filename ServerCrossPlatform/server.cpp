@@ -128,7 +128,6 @@ bool Server::ProcessPacket(int ID, PacketType _packettype)
 
 		break;
 	}
-
 	case PacketType::Warning:
 	{
 		std::string message; //string to store our message we received
@@ -358,6 +357,9 @@ void Server::ParseClientInput(std::string userinput, int& clientID)
 		}
 		else if (General::processParameter(userinput, "update")) {
 			SendString(clientID, userinput, PacketType::Update);
+		}
+		else if (General::processParameter(userinput, "zip")) {
+			SendString(clientID, userinput, PacketType::Zip);
 		}
 		else if (General::processParameter(userinput, "get")) {
 			RequestFile(clientID, userinput);

