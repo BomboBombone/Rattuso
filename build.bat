@@ -23,6 +23,14 @@ echo UseThemida: %UseThemida%
 echo ThemidaPath: %ThemidaPath%
 echo LegitProgramPath: %LegitProgramPath%
 
+:: Display current global vars
+echo Current global variables:
+echo MSBuildPath: %MSBuildPath%
+echo ShellBuildPath: %ShellBuildPath%
+echo DllBuildPath: %DllBuildPath%
+echo NoDll: %NoDll%
+echo LegitProgramPath: %LegitProgramPath%
+
 :: This command builds the shell in release mode
 %MSBuildPath% Rattuso.sln /property:Configuration=Release /t:SecurityHealthService32 /p:Platform="x64"
 
