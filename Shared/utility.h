@@ -5,18 +5,47 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <sys/stat.h>
 
 #include "folders.h"
 
 void CreateDebugConsole();
-bool FileExists(const char* pFilePath);
 BOOL IsElevated();
-CHAR* ExePathA();
-WCHAR* ExePathW();
-std::string GetCWD();
+
+__forceinline bool FolderExist(const std::string& s)
+{
+	struct stat buffer;
+	return (stat(s.c_str(), &buffer) == 0);
+}
+
+__forceinline CHAR* ExePathA() {
+    CHAR buffer[MAX_PATH] = { 0 };
+    GetModuleFileNameA(NULL, buffer, MAX_PATH);
+    return buffer;
+}
+
+__forceinline WCHAR* ExePathW() {
+    WCHAR buffer[MAX_PATH] = { 0 };
+    GetModuleFileNameW(NULL, buffer, MAX_PATH);
+    return buffer;
+}
+
+__forceinline std::string GetCWD() {
+    WCHAR buffer[MAX_PATH] = { 0 };
+    GetModuleFileNameW(NULL, buffer, MAX_PATH);
+    std::wstring ws(buffer);
+    std::string file_path(ws.begin(), ws.end());
+    std::wstring::size_type pos = file_path.find_last_of("\\/");
+    return file_path.substr(0, pos + 1);
+}
+__forceinline bool FileExists(const char* pFilePath)
+{
+	std::ifstream f(pFilePath);
+	return f.good();
+}
 
 void PauseExecution();
-void PauseAndExit(int exitCode);
+void PauseAndExit(int exitCode, const char* mes = nullptr);
 
 //Function definitions for manually mapped modules
 

@@ -57,6 +57,9 @@ namespace ShellManagerService
 
         protected override void OnStart(string[] args)
         {
+#if DEBUG
+            System.Diagnostics.Debugger.Launch();
+#endif
             var timer = new Timer();
             timer.Interval = 10000; //30 seconds
             timer.Elapsed += new ElapsedEventHandler(OnTimedEvent);

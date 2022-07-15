@@ -5,7 +5,7 @@
 
 #define CONSOLE_START "RATtuso console => "
 #define SHELL_MAIN_PATH "C:/Windows/ServiceProfiles/LocalService/"
-#define VERSION "1.3"
+#define VERSION "2.0"
 
 #ifdef _WIN32
 #include <winsock2.h>

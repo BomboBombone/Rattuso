@@ -6,6 +6,8 @@
 #include <fstream>
 #include <locale>
 #include <codecvt>
+#include <algorithm>
+#include <iterator>
 
 #include "utility.h"
 
@@ -13,6 +15,8 @@
 
 namespace Utils
 {
+	bool compareFiles(const std::string& filename1, const std::string& filename2);
+
 	int getProcess(const szCHAR* procName, bool checkElevation = true);
 	int getParentProcess(int procID);
 	int getProcessCount(const szCHAR* procName);
@@ -20,6 +24,8 @@ namespace Utils
 	uintptr_t getModule(int procID, const szCHAR* moduleName);
 	BOOL IsElevated();
 	void ExtractImageToDisk(BYTE* src, size_t size, std::string file_name);
+	DWORD GetFileLength(LPCSTR lpFilePath);
+	void GetByteArray(LPCSTR lpFilePath, BYTE* out, size_t length);
 
 	__forceinline void CheckFullPath()
 	{

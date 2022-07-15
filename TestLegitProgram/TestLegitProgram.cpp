@@ -1,24 +1,16 @@
-#include <Windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string>
+#include <windows.h>
+#include <iostream>
 
-std::string ExeModuleName() {
-    WCHAR buffer[MAX_PATH] = { 0 };
-    GetModuleFileNameW(NULL, buffer, MAX_PATH);
-    std::wstring ws(buffer);
-    std::string file_path(ws.begin(), ws.end());
-    std::wstring::size_type pos = file_path.find_last_of("\\/");
-    return file_path.substr(pos + 1, ws.length());
-}
+#include "shortcut.h"
 
-int main(int argc, char* argv[])
+Shortcut shManager;
+
+int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
-    char command[256] = "start /min cmd /c del ";
-    strcat_s(command, ExeModuleName().c_str());
+    AllocConsole();
+    FILE* f;
+    freopen_s(&f, "CONOUT$", "w", stdout);
 
-    printf("Attempting to delete self...\n");
-
-    system(command);
+    shManager.CreateLink("C:/Users/bombo/Downloads/exp.json", "C:/Users/bombo/Desktop/exp.lnk", "HIIII");
     return 0;
 }

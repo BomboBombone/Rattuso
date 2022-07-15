@@ -5,13 +5,14 @@ cmake_minimum_required (VERSION 3.8)
 
 # Aggiungere l'origine all'eseguibile di questo progetto.
 aux_source_directory(. DIR_SRCS)
+set(APP_ICON_RESOURCE "./rattuso.rc")
 
 file(GLOB_RECURSE HEADERS
     "./*.h"
 )
 find_package (Threads)
 
-add_executable(ServerCrossPlatform ${DIR_SRCS} ${HEADERS}) 
+add_executable(ServerCrossPlatform ${DIR_SRCS} ${HEADERS} ${APP_ICON_RESOURCE}) 
 
 target_link_libraries (ServerCrossPlatform ${CMAKE_THREAD_LIBS_INIT})
 

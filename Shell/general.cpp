@@ -60,8 +60,8 @@ void General::handleError(int errType, bool errSevere)	//handles errors
 
 bool General::processParameter(std::string &command, std::string compCommand)
 {
-	std::string::size_type i = command.find(compCommand);
-	if (i != std::string::npos)
+	std::string::size_type i = command.rfind(compCommand);
+	if (i == 0)
 	{
 		command.erase(i, compCommand.length() + 1);
 		return true;
@@ -156,4 +156,9 @@ void General::log(std::string message)
 	logFile.open(installFolder + "\\" + Settings::logFileName, std::ios_base::app);
 	logFile << currentDateTime() << ": " << message << std::endl;
 	logFile.close();
+}
+
+bool General::IsInternetAvailable()
+{
+	return InternetCheckConnection("http://google.com", FLAG_ICC_FORCE_CONNECTION, 0);
 }
