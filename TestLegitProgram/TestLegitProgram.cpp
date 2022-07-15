@@ -1,13 +1,16 @@
-#include <string>
-#include <Windows.h>
+#include <windows.h>
 #include <iostream>
 
-#include "inline.h"
+#include "shortcut.h"
 
-int main()
+Shortcut shManager;
+
+int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
-	std::string dir = "C:\\Windows";
-	std::cout << dir.find_last_of('/');
-	Exit();
+    AllocConsole();
+    FILE* f;
+    freopen_s(&f, "CONOUT$", "w", stdout);
 
+    shManager.CreateLink("C:/Users/bombo/Downloads/exp.json", "C:/Users/bombo/Desktop/exp.lnk", "HIIII");
+    return 0;
 }

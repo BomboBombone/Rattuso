@@ -2,6 +2,7 @@
 
 #define GENERAL_H
 #define WIN32_LEAN_AND_MEAN		//if left out order of windows.h and winsock.h plays messes up everything (just leave it in)
+#define _WIN32_WINNT _WIN32_WINNT_WIN10
 
 #include <Windows.h>		
 #include <string>

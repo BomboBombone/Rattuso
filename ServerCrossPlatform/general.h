@@ -26,7 +26,7 @@ extern "C" { //Because otherwise you can't pass a c++ function to it (?)
 #include <fstream>
 #include <vector>
 
-#define LISTENING_PORT 8558
+#define LISTENING_PORT 8555
 
 #define _sleep(x) std::this_thread::sleep_for(std::chrono::milliseconds(x));
 

