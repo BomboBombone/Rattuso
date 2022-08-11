@@ -1,11 +1,6 @@
 ![rattusissimo](https://user-images.githubusercontent.com/88135556/175606304-e6ca0b95-4d65-4e0f-a1bd-916467b84e61.png) 
 # RATtuso
-### Why this name?
-Look up the italian definition of "rattuso"
-### Why open source?
-To flex and cuz I want a custom Windows Defender identificator that says "Virus type: RATTUSO!general" or sum shit like that
-### Can you help me compile this?
-No, now shut the fuck up.
+A simple and open source RAT with many features.
 
 ## Setup
 Download [CMake](https://cmake.org/download/ "CMake download") and [vcpkg](https://vcpkg.io/en/getting-started.html).
